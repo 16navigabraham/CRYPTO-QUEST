@@ -181,12 +181,14 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       });
 
       const difficultyLevel = difficultyConfig.id;
+      const scoreAsBigInt = BigInt(score);
+
 
       const { request } = await walletClient.simulateContract({
         address: contractAddress,
         abi: contractAbi,
         functionName: 'claimReward',
-        args: [quizId, difficultyLevel, score, 1], // multiplier is 1 for now
+        args: [quizId, difficultyLevel, scoreAsBigInt, BigInt(1)], // multiplier is 1 for now
         account: embeddedWallet.address as Hex,
       });
       
@@ -419,3 +421,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    
