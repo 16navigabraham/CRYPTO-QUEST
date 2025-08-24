@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogIn } from 'lucide-react';
 import type { SVGProps } from 'react';
+import { Button } from '@/components/ui/button';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -46,6 +47,13 @@ const difficultyLevels = [
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
+      <div className="absolute top-4 right-4">
+        <Button asChild variant="outline">
+          <Link href="/login">
+            <LogIn className="mr-2 h-4 w-4" /> Login
+          </Link>
+        </Button>
+      </div>
       <div className="w-full max-w-4xl space-y-10">
         <header className="text-center space-y-3">
           <Logo />
