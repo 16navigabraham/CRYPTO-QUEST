@@ -135,7 +135,7 @@ export default function LeaderboardPage() {
                 <LeaderboardSkeleton />
             </div>
         </div>
-      )
+      );
   }
 
   const topThree = players.slice(0, 3);
@@ -190,7 +190,7 @@ export default function LeaderboardPage() {
                       <div className="flex items-center gap-3">
                          <Avatar className="h-10 w-10">
                            <AvatarImage src={player.avatar || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
-                           <AvatarFallback>{player.name.charAt(0)}</Fallback>
+                           <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <span>{player.name}</span>
                       </div>
