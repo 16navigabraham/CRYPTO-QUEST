@@ -52,10 +52,18 @@ export async function submitScore(privyDid: string, quizId: string, score: numbe
     });
 
     const data = await response.json();
-    if (!response.ok) {
+    
+    // If the response is not OK, but it's a 409 Conflict, it means the quiz was already completed.
+    // This is not a critical failure, so we can allow the user to proceed.
+    if (!response.ok && response.status !== 409) {
       console.error('Backend returned an error:', data);
       throw new Error(data.message || `Failed to submit score. Status: ${response.status}`);
     }
+
+    if (response.status === 409) {
+      console.log('Quiz already completed, proceeding...');
+    }
+
     return data;
   } catch (error) {
     console.error('Error submitting score:', error);
