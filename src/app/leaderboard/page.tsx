@@ -105,11 +105,11 @@ export default function LeaderboardPage() {
       setLoading(true);
       try {
         const leaderboardData = await getLeaderboard();
-        // The API returns 'name', but our component expects 'name'. Let's map it.
+        // The API returns 'name' and 'score', which matches our component props.
         const formattedData = leaderboardData.map((p: any) => ({
             rank: p.rank,
-            name: p.username || `User ${p.privyDid.substring(0, 6)}`,
-            score: p.total_score,
+            name: p.name || `User ${p.privyDid.substring(0, 6)}`,
+            score: p.score,
             avatar: p.avatar,
         }));
         setPlayers(formattedData);
@@ -190,7 +190,7 @@ export default function LeaderboardPage() {
                       <div className="flex items-center gap-3">
                          <Avatar className="h-10 w-10">
                            <AvatarImage src={player.avatar || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
-                           <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
+                           <AvatarFallback>{player.name.charAt(0)}</Fallback>
                         </Avatar>
                         <span>{player.name}</span>
                       </div>

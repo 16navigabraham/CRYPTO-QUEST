@@ -1,9 +1,16 @@
 
 'use client';
-import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
+import { PrivyProvider, usePrivy, type User } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { createUser } from '@/app/actions';
+
+function getUsername(user: User): string {
+    if (user.twitter) {
+        return user.twitter.username;
+    }
+    return `User-${user.id.substring(0, 6)}`
+}
 
 function InnerPrivyProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -12,8 +19,6 @@ function InnerPrivyProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const handleLogin = async () => {
             if (ready && authenticated && user) {
-                // This will fire every time the user is authenticated.
-                // The backend should handle cases where the user already exists.
                 const embeddedWallet = user.wallets?.find(w => w.walletClientType === 'privy');
                 if (embeddedWallet) {
                    await createUser(user.id, embeddedWallet.address);
