@@ -22,20 +22,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { getLeaderboard } from '../actions';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-const placeholderPlayers = [
-  { rank: 1, name: 'Satoshi', score: 10000, avatar: '/avatars/1.png' },
-  { rank: 2, name: 'Vitalik', score: 9500, avatar: '/avatars/2.png' },
-  { rank: 3, name: 'Gavin', score: 9000, avatar: '/avatars/3.png' },
-  { rank: 4, name: 'Charles', score: 8500, avatar: '/avatars/4.png' },
-  { rank: 5, name: 'Anatoly', score: 8000, avatar: '/avatars/5.png' },
-  { rank: 6, name: 'Silvio', score: 7500, avatar: '/avatars/6.png' },
-  { rank: 7, name: 'Sergey', score: 7000, avatar: '/avatars/7.png' },
-  { rank: 8, name: 'Rune', score: 6500, avatar: '/avatars/8.png' },
-  { rank: 9, name: 'Stani', score: 6000, avatar: '/avatars/9.png' },
-  { rank: 10, name: 'Hayden', score: 5500, avatar: '/avatars/10.png' },
-];
+type Player = {
+    rank: number;
+    name: string;
+    score: number;
+    avatar: string | null;
+}
 
 const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="h-6 w-6 text-yellow-400" />;
@@ -51,10 +47,99 @@ const getRankColor = (rank: number) => {
     return "border-border";
 }
 
+const LeaderboardSkeleton = () => (
+    <div className="w-full max-w-4xl">
+        <Card>
+            <CardHeader className="text-center">
+                <Skeleton className="h-8 w-1/2 mx-auto" />
+                <Skeleton className="h-4 w-3/4 mx-auto" />
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    {[...Array(3)].map((_, i) => (
+                        <Card key={i} className="text-center p-4">
+                            <div className="flex flex-col items-center gap-2">
+                                <Skeleton className="h-6 w-6 rounded-full" />
+                                <Skeleton className="h-20 w-20 rounded-full" />
+                                <Skeleton className="h-6 w-24" />
+                                <Skeleton className="h-5 w-16" />
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[80px]">Rank</TableHead>
+                            <TableHead>Player</TableHead>
+                            <TableHead className="text-right">Score</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(7)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-5 w-5" /></TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Skeleton className="h-10 w-10 rounded-full" />
+                                        <Skeleton className="h-5 w-32" />
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    </div>
+);
+
 
 export default function LeaderboardPage() {
-  const topThree = placeholderPlayers.slice(0, 3);
-  const restOfPlayers = placeholderPlayers.slice(3);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setLoading(true);
+      try {
+        const leaderboardData = await getLeaderboard();
+        // The API returns 'name', but our component expects 'name'. Let's map it.
+        const formattedData = leaderboardData.map((p: any) => ({
+            rank: p.rank,
+            name: p.username || `User ${p.privyDid.substring(0, 6)}`,
+            score: p.total_score,
+            avatar: p.avatar,
+        }));
+        setPlayers(formattedData);
+      } catch (error) {
+        console.error("Failed to fetch leaderboard", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
+
+  if (loading) {
+      return (
+         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
+            <div className="w-full max-w-4xl">
+                 <Button asChild variant="ghost" className="mb-4">
+                    <Link href="/home">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Home
+                    </Link>
+                </Button>
+                <LeaderboardSkeleton />
+            </div>
+        </div>
+      )
+  }
+
+  const topThree = players.slice(0, 3);
+  const restOfPlayers = players.slice(3);
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
@@ -73,12 +158,12 @@ export default function LeaderboardPage() {
           <CardContent>
             {/* Top 3 Players */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              {topThree.map((player, index) => (
+              {topThree.map((player) => (
                 <Card key={player.rank} className={cn("text-center p-4 transform transition-transform hover:-translate-y-1", getRankColor(player.rank))}>
                   <div className="flex flex-col items-center gap-2">
                     <div className="mb-2">{getRankIcon(player.rank)}</div>
                      <Avatar className="h-20 w-20 border-2 border-primary">
-                      <AvatarImage src={`https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                      <AvatarImage src={player.avatar || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
                       <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <p className="text-xl font-bold">{player.name}</p>
@@ -104,7 +189,7 @@ export default function LeaderboardPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                          <Avatar className="h-10 w-10">
-                           <AvatarImage src={`https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                           <AvatarImage src={player.avatar || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
                            <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <span>{player.name}</span>

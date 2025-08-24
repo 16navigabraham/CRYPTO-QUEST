@@ -1,10 +1,73 @@
 'use server';
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
-import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
+import { textToSpeech, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits } from 'viem';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+// --- User Management ---
+export async function createUser(privyDid: string, walletAddress: string) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        privyDid,
+        walletAddress,
+        username: `User-${privyDid.substring(0, 6)}`,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        // It's okay if user already exists, don't throw error
+        console.log('User might already exist:', data.message);
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    // Don't throw error to the client for this
+  }
+}
+
+// --- Score Management ---
+export async function submitScore(privyDid: string, quizId: string, score: number, difficulty: string) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/scores`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ privyDid, quizId, score, difficulty }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to submit score.');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error submitting score:', error);
+    throw error;
+  }
+}
+
+
+// --- Leaderboard ---
+export async function getLeaderboard() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/leaderboard`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch leaderboard');
+        }
+        const data = await response.json();
+        return data.data.leaderboard;
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        return [];
+    }
+}
 
 
 const getTopicForDifficulty = (difficulty: string): string => {

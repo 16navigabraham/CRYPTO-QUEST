@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { getQuizQuestions, textToSpeech } from '@/app/actions';
+import { getQuizQuestions, submitScore, textToSpeech } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -49,7 +49,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [claimState, setClaimState] = useState<ClaimState>('idle');
   
   const { toast } = useToast();
-  const { ready, authenticated } = usePrivy();
+  const { ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
   const router = useRouter();
@@ -118,6 +118,26 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     }
   };
 
+  const handleQuizCompletion = useCallback(async (finalScore: number) => {
+      if (!user || !quizId) return;
+      try {
+          await submitScore(user.id, quizId, finalScore, params.difficulty);
+          toast({
+              title: "Score Saved!",
+              description: "Your quiz results have been saved.",
+          });
+      } catch (error) {
+          console.error("Failed to submit score:", error);
+           toast({
+              variant: 'destructive',
+              title: "Sync Failed",
+              description: "Could not save your score to the server.",
+          });
+      }
+       setQuizState('completed');
+
+  }, [user, quizId, params.difficulty, toast]);
+
   const handleNextQuestion = () => {
     const nextIndex = currentQuestionIndex + 1;
     if (nextIndex < questions.length) {
@@ -127,16 +147,17 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setAudioUrl(null);
       handleTextToSpeech(questions[nextIndex].question);
     } else {
-      setQuizState('completed');
+      // Quiz is finished, handle completion
+      handleQuizCompletion(score);
     }
   };
 
   const handleClaimRewards = async () => {
-    if (!embeddedWallet || !quizId) {
+    if (!embeddedWallet || !quizId || !user) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Wallet not connected or quiz ID is missing.',
+        description: 'Wallet not connected, user not found, or quiz ID is missing.',
       });
       return;
     }
@@ -144,6 +165,9 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('claiming');
 
     try {
+      // First, ensure score is submitted. This is a fallback if it somehow failed before.
+      await submitScore(user.id, quizId, score, params.difficulty);
+      
       await embeddedWallet.switchChain(base.id);
       const provider = await embeddedWallet.getEthersProvider?.() as EIP1193Provider;
       if (!provider) {
@@ -161,7 +185,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         address: contractAddress,
         abi: contractAbi,
         functionName: 'claimReward',
-        args: [quizId, difficultyLevel, score, 1],
+        args: [quizId, difficultyLevel, score, 1], // multiplier is 1 for now
         account: embeddedWallet.address as Hex,
       });
       
@@ -394,5 +418,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
