@@ -1,8 +1,11 @@
-
 'use server';
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
-import { textToSpeech, TextToSpeechOutput } from '@/ai/flows/text-to-speech';
+import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
+import { publicClient } from '@/lib/viem';
+import { contractAbi, contractAddress } from '@/lib/contract';
+import { erc20Abi, formatUnits } from 'viem';
+
 
 const getTopicForDifficulty = (difficulty: string): string => {
   switch (difficulty.toLowerCase()) {
@@ -50,4 +53,55 @@ export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
   }
 }
 
-    
+async function getRewardTokenAddress(): Promise<`0x${string}`> {
+    try {
+        const tokenAddress = await publicClient.readContract({
+            address: contractAddress,
+            abi: contractAbi,
+            functionName: 'rewardToken',
+        });
+        return tokenAddress;
+    } catch (error) {
+        console.error('Error fetching reward token address:', error);
+        throw new Error('Could not fetch reward token address.');
+    }
+}
+
+export async function getTokenInfo(userAddress: `0x${string}`) {
+    try {
+        const tokenAddress = await getRewardTokenAddress();
+        const [balance, symbol, decimals] = await Promise.all([
+            publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'balanceOf',
+                args: [userAddress],
+            }),
+            publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'symbol',
+            }),
+            publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'decimals',
+            }),
+        ]);
+
+        return {
+            balance: formatUnits(balance, decimals),
+            symbol,
+            decimals,
+            tokenAddress,
+        };
+    } catch (error) {
+        console.error('Error fetching token info:', error);
+        return {
+            balance: '0',
+            symbol: 'CQT',
+            decimals: 18,
+            tokenAddress: '0x',
+        };
+    }
+}
