@@ -10,10 +10,13 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle } from 'lucide-react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-
+import { createWalletClient, http, type EIP1193Provider, stringToHex, Hex } from 'viem';
+import { base } from 'viem/chains';
+import { contractAddress, contractAbi } from '@/lib/contract';
+import { useToast } from '@/hooks/use-toast';
 
 type Question = {
   question: string;
@@ -22,6 +25,15 @@ type Question = {
 };
 
 type QuizState = 'loading' | 'active' | 'completed' | 'error';
+type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
+
+const difficultyMap: { [key: string]: number } = {
+  beginner: 0,
+  intermediate: 1,
+  advanced: 2,
+  expert: 3,
+  master: 4,
+};
 
 export default function QuizPage({ params }: { params: { difficulty: string } }) {
   const [quizState, setQuizState] = useState<QuizState>('loading');
@@ -33,13 +45,15 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-
+  const [quizId, setQuizId] = useState<Hex | null>(null);
+  const [claimState, setClaimState] = useState<ClaimState>('idle');
+  
+  const { toast } = useToast();
   const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
-
   const router = useRouter();
-  
+
   useEffect(() => {
     if (ready && !authenticated) {
       router.push('/login');
@@ -47,18 +61,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }, [ready, authenticated, router]);
 
   const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
-  
-  const rewardPerQuestion = useMemo(() => {
-    switch (difficulty.toLowerCase()) {
-      case 'beginner': return 1;
-      case 'intermediate': return 2;
-      case 'advanced': return 3;
-      case 'expert': return 5;
-      case 'master': return 8;
-      default: return 1;
-    }
-  }, [difficulty]);
-
 
   const handleTextToSpeech = useCallback(async (text: string) => {
     try {
@@ -78,6 +80,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setCurrentQuestionIndex(0);
     setScore(0);
     setAudioUrl(null);
+    setClaimState('idle');
+    setQuizId(stringToHex(crypto.randomUUID(), { size: 32 }));
     try {
       const fetchedQuestions = await getQuizQuestions(difficulty);
       setQuestions(fetchedQuestions);
@@ -120,6 +124,67 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setQuizState('completed');
     }
   };
+
+  const handleClaimRewards = async () => {
+    if (!embeddedWallet || !quizId) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Wallet not connected or quiz ID is missing.',
+      });
+      return;
+    }
+
+    setClaimState('claiming');
+
+    try {
+      await embeddedWallet.switchChain(base.id);
+      const provider = await embeddedWallet.getEthersProvider?.() as EIP1193Provider;
+      if (!provider) {
+        throw new Error('Could not get wallet provider.');
+      }
+      const walletClient = createWalletClient({
+        account: embeddedWallet.address as Hex,
+        chain: base,
+        transport: http(), 
+      });
+
+      const difficultyLevel = difficultyMap[difficulty.toLowerCase()];
+
+      const { request } = await walletClient.simulateContract({
+        address: contractAddress,
+        abi: contractAbi,
+        functionName: 'claimReward',
+        args: [quizId, difficultyLevel, score, 1],
+        account: embeddedWallet.address as Hex,
+      });
+      
+      const hash = await walletClient.writeContract(request);
+
+      toast({
+        title: 'Transaction Submitted',
+        description: 'Your reward claim is being processed.',
+        action: (
+           <a href={`https://basescan.org/tx/${hash}`} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline">View on Basescan</Button>
+          </a>
+        ),
+      });
+
+      setClaimState('claimed');
+
+    } catch (error) {
+      console.error('Error claiming rewards:', error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during claim.";
+      toast({
+        variant: 'destructive',
+        title: 'Claim Failed',
+        description: errorMessage.length > 100 ? errorMessage.substring(0, 100) + '...' : errorMessage,
+      });
+      setClaimState('claim_error');
+    }
+  };
+
 
   useEffect(() => {
     if (audioUrl && audioRef.current) {
@@ -189,7 +254,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   if (quizState === 'completed') {
     const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
-    const totalRewards = score * rewardPerQuestion;
 
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -206,15 +270,26 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
               </p>
               <p className="text-2xl font-semibold text-accent">{percentage}%</p>
             </div>
-             <div className="space-y-3 rounded-lg border bg-card text-card-foreground shadow-sm p-4">
-               <div className="flex items-center justify-center gap-2">
+            <Card className="p-4 space-y-3">
+              <div className="flex items-center justify-center gap-2">
                 <Award className="h-6 w-6 text-primary" />
-                <h3 className="text-xl font-semibold">Rewards Earned</h3>
+                <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
               </div>
-              <p className="text-4xl font-bold text-primary">{totalRewards} CQT</p>
-               <p className="text-xs text-muted-foreground pt-2">Rewards will be sent to your wallet. <br/> (On-chain functionality coming soon!)</p>
-            </div>
-             {embeddedWallet && (
+              <p className="text-sm text-muted-foreground">
+                Claim your CQT tokens on Base for completing this quiz!
+              </p>
+              <Button onClick={handleClaimRewards} disabled={claimState === 'claiming' || claimState === 'claimed'}>
+                {claimState === 'claiming' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
+              </Button>
+              {claimState === 'claim_error' && (
+                  <p className="text-xs text-destructive flex items-center justify-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Something went wrong. Please try again.
+                  </p>
+              )}
+            </Card>
+            {embeddedWallet && (
               <div className="space-y-2 text-left text-sm">
                  <div className="flex items-center gap-2">
                   <Wallet className="h-5 w-5 text-muted-foreground" />
