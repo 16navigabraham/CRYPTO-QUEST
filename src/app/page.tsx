@@ -1,8 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogIn } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogIn, LogOut } from 'lucide-react';
 import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
+import { usePrivy } from '@privy-io/react-auth';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -45,14 +48,22 @@ const difficultyLevels = [
 ];
 
 export default function Home() {
+  const { ready, authenticated, login, logout } = usePrivy();
+  
+  const disabled = !ready;
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
       <div className="absolute top-4 right-4">
-        <Button asChild variant="outline">
-          <Link href="/login">
+        {ready && authenticated ? (
+          <Button onClick={logout} variant="outline" disabled={disabled}>
+            <LogOut className="mr-2 h-4 w-4" /> Logout
+          </Button>
+        ) : (
+          <Button onClick={login} variant="outline" disabled={disabled}>
             <LogIn className="mr-2 h-4 w-4" /> Login
-          </Link>
-        </Button>
+          </Button>
+        )}
       </div>
       <div className="w-full max-w-4xl space-y-10">
         <header className="text-center space-y-3">
@@ -64,7 +75,19 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {difficultyLevels.map((level) => (
-            <Link href={level.href} key={level.name} className="group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+            <Link 
+              href={level.href} 
+              key={level.name} 
+              className={`group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${!authenticated && 'pointer-events-none opacity-50'}`}
+              aria-disabled={!authenticated}
+              tabIndex={!authenticated ? -1 : undefined}
+              onClick={(e) => {
+                if (!authenticated) {
+                  e.preventDefault();
+                  login();
+                }
+              }}
+            >
               <Card className="h-full transform transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/20 group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:shadow-primary/20">
                 <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
                   <div className="bg-primary/10 p-3 rounded-full">
