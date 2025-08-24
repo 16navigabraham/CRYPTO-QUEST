@@ -53,23 +53,20 @@ export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
   }
 }
 
-async function getRewardTokenAddress(): Promise<`0x${string}`> {
+export async function getTokenInfo(userAddress: `0x${string}`) {
+    let tokenAddress: `0x${string}`;
     try {
-        const tokenAddress = await publicClient.readContract({
+        tokenAddress = await publicClient.readContract({
             address: contractAddress,
             abi: contractAbi,
             functionName: 'rewardToken',
         });
-        return tokenAddress;
     } catch (error) {
-        console.error('Error fetching reward token address:', error);
-        throw new Error('Could not fetch reward token address.');
+        console.error('Could not fetch reward token address from contract, using fallback:', error);
+        tokenAddress = '0xb50c192B2AD5A34c30FbFbeb95fd51B0E5Af28E4';
     }
-}
 
-export async function getTokenInfo(userAddress: `0x${string}`) {
     try {
-        const tokenAddress = await getRewardTokenAddress();
         const [balance, symbol, decimals] = await Promise.all([
             publicClient.readContract({
                 address: tokenAddress,
@@ -97,11 +94,12 @@ export async function getTokenInfo(userAddress: `0x${string}`) {
         };
     } catch (error) {
         console.error('Error fetching token info:', error);
+        // Fallback for UI display if everything fails
         return {
             balance: '0',
             symbol: 'CQT',
             decimals: 18,
-            tokenAddress: '0x',
+            tokenAddress: tokenAddress,
         };
     }
 }
