@@ -21,7 +21,7 @@ function InnerPrivyProvider({ children }: { children: React.ReactNode }) {
             if (ready && authenticated && user) {
                 const embeddedWallet = user.wallets?.find(w => w.walletClientType === 'privy');
                 if (embeddedWallet) {
-                   await createUser(user.id, embeddedWallet.address);
+                   await createUser(user.id, embeddedWallet.address, getUsername(user));
                 }
                 router.push('/home');
             }

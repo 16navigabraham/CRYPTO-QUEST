@@ -10,7 +10,7 @@ import { erc20Abi, formatUnits } from 'viem';
 const BACKEND_URL = process.env.BACKEND_URL;
 
 // --- User Management ---
-export async function createUser(privyDid: string, walletAddress: string) {
+export async function createUser(privyDid: string, walletAddress: string, username: string) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/users`, {
       method: 'POST',
@@ -18,7 +18,7 @@ export async function createUser(privyDid: string, walletAddress: string) {
       body: JSON.stringify({
         privyDid,
         walletAddress,
-        username: `User-${privyDid.substring(0, 6)}`,
+        username: username || `User-${privyDid.substring(0, 6)}`,
       }),
     });
     const data = await response.json();
