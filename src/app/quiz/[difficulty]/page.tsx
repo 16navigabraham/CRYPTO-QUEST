@@ -10,8 +10,8 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2 } from 'lucide-react';
-import { usePrivy } from '@privy-io/react-auth';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet } from 'lucide-react';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 
 
@@ -35,6 +35,9 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const { ready, authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+
   const router = useRouter();
   
   useEffect(() => {
@@ -44,6 +47,18 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }, [ready, authenticated, router]);
 
   const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
+  
+  const rewardPerQuestion = useMemo(() => {
+    switch (difficulty.toLowerCase()) {
+      case 'beginner': return 1;
+      case 'intermediate': return 2;
+      case 'advanced': return 3;
+      case 'expert': return 5;
+      case 'master': return 8;
+      default: return 1;
+    }
+  }, [difficulty]);
+
 
   const handleTextToSpeech = useCallback(async (text: string) => {
     try {
@@ -174,6 +189,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   if (quizState === 'completed') {
     const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+    const totalRewards = score * rewardPerQuestion;
+
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md text-center">
@@ -181,12 +198,34 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             <CardTitle className="text-3xl">Quiz Completed!</CardTitle>
             <CardDescription>You've finished the {difficulty} quiz.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-lg">Your final score is:</p>
-            <p className="text-6xl font-bold text-primary">
-              {score} / {questions.length}
-            </p>
-            <p className="text-2xl font-semibold text-accent">{percentage}%</p>
+          <CardContent className="space-y-6">
+            <div className='space-y-2'>
+              <p className="text-lg">Your final score is:</p>
+              <p className="text-6xl font-bold text-primary">
+                {score} / {questions.length}
+              </p>
+              <p className="text-2xl font-semibold text-accent">{percentage}%</p>
+            </div>
+             <div className="space-y-3 rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+               <div className="flex items-center justify-center gap-2">
+                <Award className="h-6 w-6 text-primary" />
+                <h3 className="text-xl font-semibold">Rewards Earned</h3>
+              </div>
+              <p className="text-4xl font-bold text-primary">{totalRewards} CQT</p>
+              <Button disabled>Claim Rewards</Button>
+               <p className="text-xs text-muted-foreground pt-2">Claiming functionality coming soon!</p>
+            </div>
+             {embeddedWallet && (
+              <div className="space-y-2 text-left text-sm">
+                 <div className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-muted-foreground" />
+                  <p className="font-semibold">Your Wallet:</p>
+                </div>
+                <p className="text-xs text-muted-foreground break-all bg-muted p-2 rounded-md">
+                  {embeddedWallet.address}
+                </p>
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex justify-center gap-4">
             <Button onClick={loadQuestions}>
