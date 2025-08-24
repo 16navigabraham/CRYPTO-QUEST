@@ -12,9 +12,10 @@ import { cn } from '@/lib/utils';
 import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle } from 'lucide-react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { type Hex, stringToHex, parseUnits } from 'viem';
+import { type Hex, stringToHex, encodeFunctionData } from 'viem';
 import { base } from 'viem/chains';
 import { useToast } from '@/hooks/use-toast';
+import { contractAbi, contractAddress } from '@/lib/contract';
 
 type Question = {
   question: string;
@@ -171,9 +172,13 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       const scoreAsBigInt = BigInt(score);
       
       const unsignedTx = {
-          to: '0x3cCeBBFdE93BE1C7b7c8ecf30e2D4ffea1E28590' as Hex, // contract address
+          to: contractAddress,
           chainId: base.id,
-          data: `0xef5fb2a1${quizId.substring(2).padStart(64, '0')}${difficultyLevel.toString(16).padStart(64, '0')}${scoreAsBigInt.toString(16).padStart(64, '0')}0000000000000000000000000000000000000000000000000000000000000001` as Hex, // claimReward function selector + args
+          data: encodeFunctionData({
+            abi: contractAbi,
+            functionName: 'claimReward',
+            args: [quizId, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
+          }),
           value: '0x0'
       };
 
