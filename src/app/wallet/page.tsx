@@ -85,10 +85,11 @@ export default function WalletPage() {
         try {
             await embeddedWallet.switchChain(base.id);
             const provider = await embeddedWallet.getEthersProvider();
+            
             const walletClient = createWalletClient({
                 account: embeddedWallet.address as Hex,
                 chain: base,
-                transport: custom(provider),
+                transport: custom(provider as EIP1193Provider),
             });
 
             const amountToSend = parseUnits(values.amount, tokenInfo.decimals);
@@ -239,3 +240,5 @@ export default function WalletPage() {
     </div>
   );
 }
+
+    
