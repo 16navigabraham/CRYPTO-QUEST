@@ -60,7 +60,7 @@ export default function LandingPage() {
             </div>
             <div className="relative h-64 md:h-96">
                  <Image
-                    src="https://firebasestorage.googleapis.com/v0/b/cryptoquest-503uk.appspot.com/o/e8a1a318-0524-4f0f-871d-53696a479b1d.png?alt=media&token=e3a35ea2-1463-470a-810a-361c4794e022"
+                    src="/cat.jpg"
                     alt="CryptoQuest Hero Image"
                     fill
                     className="object-cover rounded-xl shadow-2xl"

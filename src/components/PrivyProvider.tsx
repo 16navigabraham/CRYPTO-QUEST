@@ -10,7 +10,7 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       onSuccess={() => router.push('/home')}
       config={{
-        loginMethods: ['email', 'wallet', 'google', 'github'],
+        loginMethods: ['email'],
         appearance: {
           theme: 'light',
           accentColor: '#0085FF',
