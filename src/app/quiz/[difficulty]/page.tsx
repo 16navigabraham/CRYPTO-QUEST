@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { getQuizQuestions } from '@/app/actions';
+import { getQuizQuestions, textToSpeech } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2 } from 'lucide-react';
 
 type Question = {
   question: string;
@@ -28,8 +27,21 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
+
+  const handleTextToSpeech = useCallback(async (text: string) => {
+    try {
+      const response = await textToSpeech(text);
+      if (response && response.media) {
+        setAudioUrl(response.media);
+      }
+    } catch (error) {
+      console.error('Error generating speech:', error);
+    }
+  }, []);
 
   const loadQuestions = useCallback(async () => {
     setQuizState('loading');
@@ -37,15 +49,19 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setSelectedAnswerIndex(null);
     setCurrentQuestionIndex(0);
     setScore(0);
+    setAudioUrl(null);
     try {
       const fetchedQuestions = await getQuizQuestions(difficulty);
       setQuestions(fetchedQuestions);
       setQuizState('active');
+      if (fetchedQuestions.length > 0) {
+        handleTextToSpeech(fetchedQuestions[0].question);
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred.');
       setQuizState('error');
     }
-  }, [difficulty]);
+  }, [difficulty, handleTextToSpeech]);
 
   useEffect(() => {
     loadQuestions();
@@ -63,14 +79,30 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex < questions.length) {
+      setCurrentQuestionIndex(nextIndex);
       setSelectedAnswerIndex(null);
       setIsAnswered(false);
+      setAudioUrl(null);
+      handleTextToSpeech(questions[nextIndex].question);
     } else {
       setQuizState('completed');
     }
   };
+
+  useEffect(() => {
+    if (audioUrl && audioRef.current) {
+      audioRef.current.src = audioUrl;
+      audioRef.current.play().catch(e => console.error("Audio play failed", e));
+    }
+  }, [audioUrl]);
+  
+  const playAudio = () => {
+    if(audioRef.current) {
+      audioRef.current.play().catch(e => console.error("Audio play failed", e));
+    }
+  }
 
   const currentQuestion = questions[currentQuestionIndex];
   const progressValue = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
@@ -158,6 +190,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+       <audio ref={audioRef} src={audioUrl || ''} className="hidden" />
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className="flex justify-between items-center mb-2">
@@ -170,7 +203,12 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           <Progress value={progressValue} className="w-full mt-2" />
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-lg sm:text-xl font-semibold text-center text-card-foreground">{currentQuestion.question}</p>
+          <div className="flex items-center justify-center gap-4">
+            <p className="text-lg sm:text-xl font-semibold text-center text-card-foreground">{currentQuestion.question}</p>
+            <Button onClick={playAudio} variant="ghost" size="icon" disabled={!audioUrl}>
+              <Volume2 className="h-6 w-6" />
+            </Button>
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {currentQuestion.answers.map((answer, index) => {
               const isCorrect = index === currentQuestion.correctAnswerIndex;
