@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { getTokenInfo } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { createWalletClient, http, parseUnits, type Hex, type EIP1193Provider, erc20Abi, custom, WalletClient } from 'viem';
+import { parseUnits, type Hex } from 'viem';
 import { base } from 'viem/chains';
-import { publicClient } from '@/lib/viem';
 
 const sendSchema = z.object({
   recipient: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
@@ -37,15 +36,14 @@ type TokenInfo = {
 export default function WalletPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const { ready, authenticated, user } = usePrivy();
+    const { ready, authenticated } = usePrivy();
     const { wallets } = useWallets();
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+    const { sendTransaction, isSending } = useSendTransaction();
 
     const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isSending, setIsSending] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
 
     const form = useForm<z.infer<typeof sendSchema>>({
         resolver: zodResolver(sendSchema),
@@ -77,17 +75,6 @@ export default function WalletPage() {
         }
         if (ready && authenticated && embeddedWallet) {
             fetchTokenInfo();
-            const getClient = async () => {
-                await embeddedWallet.switchChain(base.id);
-                const provider = await embeddedWallet.getEthersProvider();
-                 const client = createWalletClient({
-                    account: embeddedWallet.address as Hex,
-                    chain: base,
-                    transport: custom(provider as EIP1193Provider),
-                });
-                setWalletClient(client);
-            };
-            getClient();
         }
     }, [ready, authenticated, router, embeddedWallet, fetchTokenInfo]);
 
@@ -100,39 +87,32 @@ export default function WalletPage() {
     };
     
     const onSubmit = async (values: z.infer<typeof sendSchema>) => {
-        if (!embeddedWallet || !tokenInfo || !walletClient) {
+        if (!embeddedWallet || !tokenInfo) {
              toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Wallet client not ready. Please try again.',
+                description: 'Wallet is not ready. Please try again.',
             });
             return;
         }
 
-        setIsSending(true);
-
         try {
+            await embeddedWallet.switchChain(base.id);
+
             const amountToSend = parseUnits(values.amount, tokenInfo.decimals);
+            
+            const unsignedTx = {
+                to: values.recipient as Hex,
+                chainId: base.id,
+                value: BigInt(0), // Not sending native currency
+                data: `0xa9059cbb${values.recipient.substring(2).padStart(64, '0')}${amountToSend.toString(16).padStart(64, '0')}` as Hex,
+            };
 
-            if (amountToSend > parseUnits(tokenInfo.balance, tokenInfo.decimals)) {
-                 toast({
-                    variant: 'destructive',
-                    title: 'Error',
-                    description: 'Insufficient balance.',
-                });
-                setIsSending(false);
-                return;
-            }
-
-            const { request } = await publicClient.simulateContract({
+            const {hash} = await sendTransaction(unsignedTx, {
+                // We must specify the token address for the ERC20 transfer
+                // when we are not sending the native currency.
                 address: tokenInfo.tokenAddress,
-                abi: erc20Abi,
-                functionName: 'transfer',
-                args: [values.recipient as Hex, amountToSend],
-                account: embeddedWallet.address as Hex,
             });
-
-            const hash = await walletClient.writeContract(request);
 
             toast({
                 title: 'Transaction Sent!',
@@ -153,8 +133,6 @@ export default function WalletPage() {
                 title: 'Transaction Failed',
                 description: error.message || 'An unknown error occurred.',
             });
-        } finally {
-            setIsSending(false);
         }
     }
 
@@ -247,7 +225,7 @@ export default function WalletPage() {
                                     </FormItem>
                                 )}
                                 />
-                            <Button type="submit" className="w-full" disabled={isSending || !walletClient}>
+                            <Button type="submit" className="w-full" disabled={isSending}>
                                 {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                 Send Tokens
                             </Button>
@@ -260,7 +238,3 @@ export default function WalletPage() {
     </div>
   );
 }
-
-    
-
-    
