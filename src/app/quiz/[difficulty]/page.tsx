@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home } from 'lucide-react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 
@@ -212,8 +212,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                 <h3 className="text-xl font-semibold">Rewards Earned</h3>
               </div>
               <p className="text-4xl font-bold text-primary">{totalRewards} CQT</p>
-              <Button disabled>Claim Rewards</Button>
-               <p className="text-xs text-muted-foreground pt-2">Claiming functionality coming soon!</p>
+               <p className="text-xs text-muted-foreground pt-2">Rewards will be sent to your wallet. <br/> (On-chain functionality coming soon!)</p>
             </div>
              {embeddedWallet && (
               <div className="space-y-2 text-left text-sm">
@@ -233,7 +232,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             </Button>
             <Button asChild variant="outline">
               <Link href="/home">
-                Home
+                <Home className="mr-2 h-4 w-4" />
+                Back to Home
               </Link>
             </Button>
           </CardFooter>
