@@ -3,10 +3,27 @@
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
 import { textToSpeechFlow, TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 
+const getTopicForDifficulty = (difficulty: string): string => {
+  switch (difficulty.toLowerCase()) {
+    case 'beginner':
+      return 'Blockchain & Smart Contracts';
+    case 'intermediate':
+      return 'DeFi & Web3';
+    case 'advanced':
+      return 'Solidity';
+    case 'expert':
+      return 'Cryptography & Security';
+    case 'master':
+      return 'Advanced Blockchain Concepts';
+    default:
+      return 'Web3 Development';
+  }
+};
+
 export async function getQuizQuestions(difficulty: string): Promise<GenerateQuizQuestionsOutput> {
   const input: GenerateQuizQuestionsInput = {
     difficultyLevel: difficulty,
-    topic: 'Web3 Development',
+    topic: getTopicForDifficulty(difficulty),
     numberOfQuestions: 10,
   };
 

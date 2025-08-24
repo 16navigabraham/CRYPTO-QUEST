@@ -15,7 +15,7 @@ const GenerateQuizQuestionsInputSchema = z.object({
   difficultyLevel: z
     .string()
     .describe('The difficulty level of the quiz (Beginner, Intermediate, Advanced, Expert, Master).'),
-  topic: z.string().describe('The topic of the quiz questions (e.g., Solidity, Web3, Cryptography).'),
+  topic: z.string().describe('The topic of the quiz questions (e.g., Blockchain, Smart Contracts, DeFi, Web3, Solidity).'),
   numberOfQuestions: z.number().describe('The number of questions to generate.'),
 });
 export type GenerateQuizQuestionsInput = z.infer<typeof GenerateQuizQuestionsInputSchema>;
@@ -47,6 +47,12 @@ The difficulty level is {{difficultyLevel}}.
 Each question should have 4 possible answers, and you must specify the index of the correct answer.
 
 Ensure that the questions are appropriate for the specified difficulty level. Use your best judgement to create compelling and technically accurate questions.
+
+If the difficulty is Beginner, focus on basic concepts and syntax.
+If the difficulty is Intermediate, focus on common patterns and practices.
+If the difficulty is Advanced, focus on complex topics, advanced mechanics and optimization.
+If the difficulty is Expert, focus on in-depth, niche topics.
+If the difficulty is Master, create the ultimate challenge questions.
 
 Output the questions as a JSON array of objects with the following structure:
 
