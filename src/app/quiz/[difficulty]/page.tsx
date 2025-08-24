@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -10,6 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2 } from 'lucide-react';
+import { usePrivy } from '@privy-io/react-auth';
+import { useRouter } from 'next/navigation';
+
 
 type Question = {
   question: string;
@@ -29,6 +33,15 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const { ready, authenticated } = usePrivy();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (ready && !authenticated) {
+      router.push('/login');
+    }
+  }, [ready, authenticated, router]);
 
   const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
 
@@ -64,8 +77,10 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }, [difficulty, handleTextToSpeech]);
 
   useEffect(() => {
-    loadQuestions();
-  }, [loadQuestions]);
+    if(ready && authenticated) {
+        loadQuestions();
+    }
+  }, [loadQuestions, ready, authenticated]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (isAnswered) return;
@@ -107,7 +122,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const currentQuestion = questions[currentQuestionIndex];
   const progressValue = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
-  if (quizState === 'loading') {
+  if (quizState === 'loading' || !ready) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-2xl animate-pulse">
@@ -149,7 +164,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                 <RefreshCw className="mr-2 h-4 w-4" /> Try Again
                 </Button>
                 <Button asChild variant="outline">
-                <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
+                <Link href="/home"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
                 </Button>
            </CardFooter>
         </Card>
@@ -178,7 +193,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
               <RefreshCw className="mr-2 h-4 w-4" /> Play Again
             </Button>
             <Button asChild variant="outline">
-              <Link href="/">
+              <Link href="/home">
                 Home
               </Link>
             </Button>
@@ -247,7 +262,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         </CardFooter>
       </Card>
       <Button asChild variant="link" className="mt-4 text-muted-foreground">
-        <Link href="/">
+        <Link href="/home">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Abandon Quest
         </Link>

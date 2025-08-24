@@ -1,3 +1,4 @@
+
 'use client';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
@@ -7,7 +8,7 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
-      onSuccess={() => router.push('/')}
+      onSuccess={() => router.push('/home')}
       config={{
         loginMethods: ['email', 'wallet', 'google', 'github'],
         appearance: {
