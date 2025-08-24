@@ -16,7 +16,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { createWalletClient, http, parseUnits, type Hex, type EIP1193Provider, erc20Abi } from 'viem';
+import { createWalletClient, http, parseUnits, type Hex, type EIP1193Provider, erc20Abi, custom } from 'viem';
 import { base } from 'viem/chains';
 import { publicClient } from '@/lib/viem';
 
@@ -84,11 +84,11 @@ export default function WalletPage() {
 
         try {
             await embeddedWallet.switchChain(base.id);
-            const provider = await embeddedWallet.getEthersProvider?.() as EIP1193Provider;
+            const provider = await embeddedWallet.getEthersProvider();
             const walletClient = createWalletClient({
                 account: embeddedWallet.address as Hex,
                 chain: base,
-                transport: http(),
+                transport: custom(provider),
             });
 
             const amountToSend = parseUnits(values.amount, tokenInfo.decimals);
@@ -239,4 +239,3 @@ export default function WalletPage() {
     </div>
   );
 }
-
