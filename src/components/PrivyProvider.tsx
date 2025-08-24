@@ -6,10 +6,10 @@ import { useEffect } from 'react';
 import { createUser } from '@/app/actions';
 
 function getUsername(user: User): string {
-    if (user.twitter) {
+    if (user.twitter?.username) {
         return user.twitter.username;
     }
-    return `User-${user.id.substring(0, 6)}`
+    return 'Anonymous';
 }
 
 function InnerPrivyProvider({ children }: { children: React.ReactNode }) {

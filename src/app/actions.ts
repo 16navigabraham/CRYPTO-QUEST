@@ -18,13 +18,12 @@ export async function createUser(privyDid: string, walletAddress: string, userna
       body: JSON.stringify({
         privyDid,
         walletAddress,
-        username: username || `User-${privyDid.substring(0, 6)}`,
+        username,
       }),
     });
     const data = await response.json();
-    if (!response.ok) {
-        // It's okay if user already exists, don't throw error
-        console.log('User might already exist:', data.message);
+    if (!response.ok && response.status !== 409) { // 409 is 'User already exists', which is fine.
+        console.error('Failed to create user:', data.message);
     }
     return data;
   } catch (error) {
@@ -42,12 +41,11 @@ export async function submitScore(privyDid: string, quizId: string, score: numbe
       body: JSON.stringify({ privyDid, quizId, score, difficulty }),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to submit score.');
+      throw new Error(data.message || 'Failed to submit score.');
     }
-
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('Error submitting score:', error);
     throw error;
