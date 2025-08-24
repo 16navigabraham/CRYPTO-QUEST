@@ -135,7 +135,7 @@ export default function LeaderboardPage() {
                 <LeaderboardSkeleton />
             </div>
         </div>
-      )
+      );
   }
 
   const topThree = players.slice(0, 3);
