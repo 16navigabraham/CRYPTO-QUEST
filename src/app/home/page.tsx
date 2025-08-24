@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogIn, LogOut, Loader2 } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3 } from 'lucide-react';
 import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
@@ -71,7 +71,10 @@ export default function HomePage() {
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex gap-2">
+        <Button onClick={() => router.push('/leaderboard')} variant="outline">
+            <BarChart3 className="mr-2 h-4 w-4" /> Leaderboard
+        </Button>
         <Button onClick={logout} variant="outline">
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </Button>
