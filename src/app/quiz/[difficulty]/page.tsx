@@ -16,6 +16,7 @@ import { createWalletClient, http, type EIP1193Provider, stringToHex, Hex, custo
 import { base } from 'viem/chains';
 import { contractAddress, contractAbi } from '@/lib/contract';
 import { useToast } from '@/hooks/use-toast';
+import { publicClient } from '@/lib/viem';
 
 type Question = {
   question: string;
@@ -86,7 +87,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setScore(0);
     setAudioUrl(null);
     setClaimState('idle');
-    // Generate a new quizId, ensuring it fits within 32 bytes
     const newQuizId = crypto.randomUUID().slice(0, 32);
     setQuizId(stringToHex(newQuizId, { size: 32 }));
     try {
@@ -148,7 +148,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setAudioUrl(null);
       handleTextToSpeech(questions[nextIndex].question);
     } else {
-      // Quiz is finished, handle completion
       handleQuizCompletion(score);
     }
   };
@@ -166,25 +165,22 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('claiming');
 
     try {
-      // First, ensure score is submitted. This is a fallback if it somehow failed before.
       await submitScore(user.id, quizId, score, params.difficulty);
       
       await embeddedWallet.switchChain(base.id);
       const provider = await embeddedWallet.getEthersProvider();
-      if (!provider) {
-        throw new Error('Could not get wallet provider.');
-      }
+
       const walletClient = createWalletClient({
         account: embeddedWallet.address as Hex,
         chain: base,
-        transport: custom(provider),
+        transport: custom(provider as EIP1193Provider),
       });
 
       const difficultyLevel = difficultyConfig.id;
       const scoreAsBigInt = BigInt(score);
 
 
-      const { request } = await walletClient.simulateContract({
+      const { request } = await publicClient.simulateContract({
         address: contractAddress,
         abi: contractAbi,
         functionName: 'claimReward',
@@ -421,5 +417,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
