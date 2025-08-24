@@ -16,7 +16,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { createWalletClient, http, parseUnits, type Hex, type EIP1193Provider, erc20Abi, custom } from 'viem';
+import { createWalletClient, http, parseUnits, type Hex, type EIP1193Provider, erc20Abi, custom, WalletClient } from 'viem';
 import { base } from 'viem/chains';
 import { publicClient } from '@/lib/viem';
 
@@ -45,6 +45,7 @@ export default function WalletPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSending, setIsSending] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
 
     const form = useForm<z.infer<typeof sendSchema>>({
         resolver: zodResolver(sendSchema),
@@ -54,11 +55,21 @@ export default function WalletPage() {
     const fetchTokenInfo = useCallback(async () => {
         if (embeddedWallet) {
             setIsLoading(true);
-            const info = await getTokenInfo(embeddedWallet.address as `0x${string}`);
-            setTokenInfo(info);
-            setIsLoading(false);
+            try {
+                const info = await getTokenInfo(embeddedWallet.address as `0x${string}`);
+                setTokenInfo(info);
+            } catch (error) {
+                console.error("Failed to fetch token info:", error);
+                 toast({
+                    variant: 'destructive',
+                    title: 'Error',
+                    description: 'Could not fetch your token balance.',
+                });
+            } finally {
+                setIsLoading(false);
+            }
         }
-    }, [embeddedWallet]);
+    }, [embeddedWallet, toast]);
 
     useEffect(() => {
         if (ready && !authenticated) {
@@ -66,6 +77,17 @@ export default function WalletPage() {
         }
         if (ready && authenticated && embeddedWallet) {
             fetchTokenInfo();
+            const getClient = async () => {
+                await embeddedWallet.switchChain(base.id);
+                const provider = await embeddedWallet.getEthersProvider();
+                 const client = createWalletClient({
+                    account: embeddedWallet.address as Hex,
+                    chain: base,
+                    transport: custom(provider as EIP1193Provider),
+                });
+                setWalletClient(client);
+            };
+            getClient();
         }
     }, [ready, authenticated, router, embeddedWallet, fetchTokenInfo]);
 
@@ -78,20 +100,18 @@ export default function WalletPage() {
     };
     
     const onSubmit = async (values: z.infer<typeof sendSchema>) => {
-        if (!embeddedWallet || !tokenInfo) return;
+        if (!embeddedWallet || !tokenInfo || !walletClient) {
+             toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Wallet client not ready. Please try again.',
+            });
+            return;
+        }
 
         setIsSending(true);
 
         try {
-            await embeddedWallet.switchChain(base.id);
-            const provider = await embeddedWallet.getEthersProvider();
-            
-            const walletClient = createWalletClient({
-                account: embeddedWallet.address as Hex,
-                chain: base,
-                transport: custom(provider as EIP1193Provider),
-            });
-
             const amountToSend = parseUnits(values.amount, tokenInfo.decimals);
 
             if (amountToSend > parseUnits(tokenInfo.balance, tokenInfo.decimals)) {
@@ -227,7 +247,7 @@ export default function WalletPage() {
                                     </FormItem>
                                 )}
                                 />
-                            <Button type="submit" className="w-full" disabled={isSending}>
+                            <Button type="submit" className="w-full" disabled={isSending || !walletClient}>
                                 {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                 Send Tokens
                             </Button>
@@ -240,5 +260,7 @@ export default function WalletPage() {
     </div>
   );
 }
+
+    
 
     
