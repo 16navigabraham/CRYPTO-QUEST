@@ -120,23 +120,23 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   };
 
   const handleQuizCompletion = useCallback(async (finalScore: number) => {
-      if (!user || !quizId) return;
-      try {
-          await submitScore(user.id, quizId, finalScore, params.difficulty);
-          toast({
-              title: "Score Saved!",
-              description: "Your quiz results have been saved.",
-          });
-      } catch (error) {
-          console.error("Failed to submit score:", error);
-           toast({
-              variant: 'destructive',
-              title: "Sync Failed",
-              description: "Could not save your score to the server.",
-          });
-      }
-       setQuizState('completed');
-
+    setQuizState('completed');
+    if (!user || !quizId) return;
+    try {
+        // We pass the score as a number, which is what the backend expects
+        await submitScore(user.id, quizId, finalScore, params.difficulty);
+        toast({
+            title: "Score Saved!",
+            description: "Your quiz results have been saved to the leaderboard.",
+        });
+    } catch (error) {
+        console.error("Failed to submit score:", error);
+         toast({
+            variant: 'destructive',
+            title: "Score Sync Failed",
+            description: error instanceof Error ? error.message : "Could not save your score to the server.",
+        });
+    }
   }, [user, quizId, params.difficulty, toast]);
 
   const handleNextQuestion = () => {
@@ -165,9 +165,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('claiming');
 
     try {
-      // We submit score here again, just in case there was an issue before.
-      await submitScore(user.id, quizId, score, params.difficulty);
-      
       const difficultyLevel = BigInt(difficultyConfig.id);
       const scoreAsBigInt = BigInt(score);
       
@@ -179,7 +176,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             functionName: 'claimReward',
             args: [quizId, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
           }),
-          value: '0x0'
       };
 
       const {hash} = await sendTransaction(unsignedTx);
