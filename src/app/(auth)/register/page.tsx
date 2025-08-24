@@ -2,26 +2,65 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Github } from 'lucide-react';
+import { Github, Loader2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords don't match");
+      toast({
+        title: 'Error',
+        description: "Passwords don't match.",
+        variant: 'destructive',
+      });
       return;
     }
-    // Handle registration logic
-    console.log({ email, password });
+    setIsLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        title: 'Registration Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const provider = new GithubAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        title: 'GitHub Sign-In Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,7 +70,7 @@ export default function RegisterPage() {
         <CardDescription>Start your CryptoQuest journey today!</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleEmailSignUp} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -41,6 +80,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
@@ -52,6 +92,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
@@ -63,9 +104,11 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
           </Button>
         </form>
@@ -74,8 +117,8 @@ export default function RegisterPage() {
             <span className="mx-4 text-muted-foreground text-xs uppercase">Or</span>
             <div className="flex-grow border-t border-muted-foreground"></div>
         </div>
-        <Button variant="outline" className="w-full">
-            <Github className="mr-2 h-4 w-4" />
+        <Button variant="outline" className="w-full" onClick={handleGitHubSignIn} disabled={isLoading}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
             Continue with GitHub
         </Button>
       </CardContent>

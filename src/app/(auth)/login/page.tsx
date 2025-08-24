@@ -2,20 +2,55 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Github } from 'lucide-react';
+import { Github, Loader2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
-    console.log({ email, password });
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        title: 'Login Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const provider = new GithubAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push('/');
+    } catch (error: any) {
+        toast({
+            title: 'GitHub Sign-In Failed',
+            description: error.message,
+            variant: 'destructive',
+        });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -25,7 +60,7 @@ export default function LoginPage() {
         <CardDescription>Enter your credentials to access your account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleEmailLogin} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -35,6 +70,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
@@ -46,9 +82,11 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Log In
           </Button>
         </form>
@@ -57,8 +95,8 @@ export default function LoginPage() {
             <span className="mx-4 text-muted-foreground text-xs uppercase">Or</span>
             <div className="flex-grow border-t border-muted-foreground"></div>
         </div>
-        <Button variant="outline" className="w-full">
-            <Github className="mr-2 h-4 w-4" />
+        <Button variant="outline" className="w-full" onClick={handleGitHubSignIn} disabled={isLoading}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
             Continue with GitHub
         </Button>
       </CardContent>
