@@ -18,6 +18,7 @@ import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createWalletClient, http, parseUnits, type Hex, type EIP1193Provider, erc20Abi } from 'viem';
 import { base } from 'viem/chains';
+import { publicClient } from '@/lib/viem';
 
 const sendSchema = z.object({
   recipient: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
@@ -102,7 +103,7 @@ export default function WalletPage() {
                 return;
             }
 
-            const { request } = await walletClient.simulateContract({
+            const { request } = await publicClient.simulateContract({
                 address: tokenInfo.tokenAddress,
                 abi: erc20Abi,
                 functionName: 'transfer',
