@@ -5,7 +5,7 @@ import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQu
 import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
-import { erc20Abi, formatUnits } from 'viem';
+import { erc20Abi, formatUnits, hexToString, type Hex } from 'viem';
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -33,21 +33,36 @@ export async function createUser(privyDid: string, walletAddress: string, userna
 }
 
 // --- Score Management ---
-export async function submitScore(privyDid: string, quizId: string, score: number, difficulty: string) {
+export async function submitScore(privyDid: string, quizId: Hex, score: number, difficulty: string) {
+  if (!BACKEND_URL) {
+    console.error('BACKEND_URL is not set. Cannot submit score.');
+    throw new Error('Server configuration error.');
+  }
+
   try {
+    // The backend expects a plain string for the quizId, not a hex value.
+    const quizIdAsString = hexToString(quizId, { size: 32 });
+
     const response = await fetch(`${BACKEND_URL}/api/scores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ privyDid, quizId, score, difficulty }),
+      body: JSON.stringify({ 
+        privyDid, 
+        quizId: quizIdAsString, 
+        score, 
+        difficulty 
+      }),
     });
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to submit score.');
+      console.error('Backend returned an error:', data);
+      throw new Error(data.message || `Failed to submit score. Status: ${response.status}`);
     }
     return data;
   } catch (error) {
     console.error('Error submitting score:', error);
+    // Re-throw the error so the client knows something went wrong.
     throw error;
   }
 }
