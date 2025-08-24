@@ -44,7 +44,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [quizId, setQuizId] = useState<Hex | null>(null);
+  const [quizId, setQuizId] = useState<string | null>(null);
   const [claimState, setClaimState] = useState<ClaimState>('idle');
   
   const { toast } = useToast();
@@ -87,8 +87,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setScore(0);
     setAudioUrl(null);
     setClaimState('idle');
-    const newQuizId = crypto.randomUUID().slice(0, 32);
-    setQuizId(stringToHex(newQuizId, { size: 32 }));
+    setQuizId(crypto.randomUUID());
     try {
       const fetchedQuestions = await getQuizQuestions(params.difficulty, difficultyConfig.questionCount);
       setQuestions(fetchedQuestions);
@@ -123,7 +122,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setQuizState('completed');
     if (!user || !quizId) return;
     try {
-        // We pass the score as a number, which is what the backend expects
         await submitScore(user.id, quizId, finalScore, params.difficulty);
         toast({
             title: "Score Saved!",
@@ -165,6 +163,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('claiming');
 
     try {
+      const quizIdAsHex = stringToHex(quizId.slice(0, 32), { size: 32 });
       const difficultyLevel = BigInt(difficultyConfig.id);
       const scoreAsBigInt = BigInt(score);
       
@@ -174,7 +173,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizId, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
+            args: [quizIdAsHex, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
           }),
       };
 

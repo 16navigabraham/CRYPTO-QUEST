@@ -5,7 +5,7 @@ import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQu
 import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
-import { erc20Abi, formatUnits, hexToString, type Hex } from 'viem';
+import { erc20Abi, formatUnits, type Hex } from 'viem';
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -33,22 +33,19 @@ export async function createUser(privyDid: string, walletAddress: string, userna
 }
 
 // --- Score Management ---
-export async function submitScore(privyDid: string, quizId: Hex, score: number, difficulty: string) {
+export async function submitScore(privyDid: string, quizId: string, score: number, difficulty: string) {
   if (!BACKEND_URL) {
     console.error('BACKEND_URL is not set. Cannot submit score.');
     throw new Error('Server configuration error.');
   }
 
   try {
-    // The backend expects a plain string for the quizId, not a hex value.
-    const quizIdAsString = hexToString(quizId, { size: 32 });
-
     const response = await fetch(`${BACKEND_URL}/api/scores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         privyDid, 
-        quizId: quizIdAsString, 
+        quizId, 
         score, 
         difficulty 
       }),
