@@ -10,13 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle } from 'lucide-react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { createWalletClient, http, type EIP1193Provider, stringToHex, Hex, custom } from 'viem';
+import { type Hex, stringToHex, parseUnits } from 'viem';
 import { base } from 'viem/chains';
-import { contractAddress, contractAbi } from '@/lib/contract';
 import { useToast } from '@/hooks/use-toast';
-import { publicClient } from '@/lib/viem';
 
 type Question = {
   question: string;
@@ -51,6 +49,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const { toast } = useToast();
   const { ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
+  const { sendTransaction, isSending } = useSendTransaction();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
   const router = useRouter();
 
@@ -165,30 +164,20 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('claiming');
 
     try {
+      // We submit score here again, just in case there was an issue before.
       await submitScore(user.id, quizId, score, params.difficulty);
       
-      await embeddedWallet.switchChain(base.id);
-      const provider = await embeddedWallet.getEthersProvider();
-
-      const walletClient = createWalletClient({
-        account: embeddedWallet.address as Hex,
-        chain: base,
-        transport: custom(provider as EIP1193Provider),
-      });
-
-      const difficultyLevel = difficultyConfig.id;
+      const difficultyLevel = BigInt(difficultyConfig.id);
       const scoreAsBigInt = BigInt(score);
-
-
-      const { request } = await publicClient.simulateContract({
-        address: contractAddress,
-        abi: contractAbi,
-        functionName: 'claimReward',
-        args: [quizId, difficultyLevel, scoreAsBigInt, BigInt(1)], // multiplier is 1 for now
-        account: embeddedWallet.address as Hex,
-      });
       
-      const hash = await walletClient.writeContract(request);
+      const unsignedTx = {
+          to: '0x3cCeBBFdE93BE1C7b7c8ecf30e2D4ffea1E28590' as Hex, // contract address
+          chainId: base.id,
+          data: `0xef5fb2a1${quizId.substring(2).padStart(64, '0')}${difficultyLevel.toString(16).padStart(64, '0')}${scoreAsBigInt.toString(16).padStart(64, '0')}0000000000000000000000000000000000000000000000000000000000000001` as Hex, // claimReward function selector + args
+          value: '0x0'
+      };
+
+      const {hash} = await sendTransaction(unsignedTx);
 
       toast({
         title: 'Transaction Submitted',
@@ -310,8 +299,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                 <p className="text-sm text-muted-foreground">
                   Claim your CQT tokens on Base for completing this quiz!
                 </p>
-                <Button onClick={handleClaimRewards} disabled={claimState === 'claiming' || claimState === 'claimed'}>
-                  {claimState === 'claiming' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button onClick={handleClaimRewards} disabled={isSending || claimState === 'claimed'}>
+                  {(isSending || claimState === 'claiming') && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
                 </Button>
                 {claimState === 'claim_error' && (
