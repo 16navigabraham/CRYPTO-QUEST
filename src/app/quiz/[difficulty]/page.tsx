@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -13,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle } from 'lucide-react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { createWalletClient, http, type EIP1193Provider, stringToHex, Hex } from 'viem';
+import { createWalletClient, http, type EIP1193Provider, stringToHex, Hex, custom } from 'viem';
 import { base } from 'viem/chains';
 import { contractAddress, contractAbi } from '@/lib/contract';
 import { useToast } from '@/hooks/use-toast';
@@ -87,7 +86,9 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setScore(0);
     setAudioUrl(null);
     setClaimState('idle');
-    setQuizId(stringToHex(crypto.randomUUID(), { size: 32 }));
+    // Generate a new quizId, ensuring it fits within 32 bytes
+    const newQuizId = crypto.randomUUID().slice(0, 32);
+    setQuizId(stringToHex(newQuizId, { size: 32 }));
     try {
       const fetchedQuestions = await getQuizQuestions(params.difficulty, difficultyConfig.questionCount);
       setQuestions(fetchedQuestions);
@@ -169,14 +170,14 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       await submitScore(user.id, quizId, score, params.difficulty);
       
       await embeddedWallet.switchChain(base.id);
-      const provider = await embeddedWallet.getEthersProvider?.() as EIP1193Provider;
+      const provider = await embeddedWallet.getEthersProvider();
       if (!provider) {
         throw new Error('Could not get wallet provider.');
       }
       const walletClient = createWalletClient({
         account: embeddedWallet.address as Hex,
         chain: base,
-        transport: http(),
+        transport: custom(provider),
       });
 
       const difficultyLevel = difficultyConfig.id;
