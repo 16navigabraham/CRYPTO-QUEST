@@ -7,7 +7,7 @@ import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits } from 'viem';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.BACKEND_URL;
 
 // --- User Management ---
 export async function createUser(privyDid: string, walletAddress: string) {
