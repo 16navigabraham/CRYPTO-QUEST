@@ -27,12 +27,12 @@ type Question = {
 type QuizState = 'loading' | 'active' | 'completed' | 'error';
 type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
 
-const difficultyMap: { [key: string]: number } = {
-  beginner: 0,
-  intermediate: 1,
-  advanced: 2,
-  expert: 3,
-  master: 4,
+const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; } } = {
+  beginner: { id: 0, questionCount: 20, passPercentage: 70 },
+  intermediate: { id: 1, questionCount: 25, passPercentage: 75 },
+  advanced: { id: 2, questionCount: 30, passPercentage: 80 },
+  expert: { id: 3, questionCount: 25, passPercentage: 85 },
+  master: { id: 4, questionCount: 20, passPercentage: 90 },
 };
 
 export default function QuizPage({ params }: { params: { difficulty: string } }) {
@@ -61,6 +61,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }, [ready, authenticated, router]);
 
   const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
+  const difficultyConfig = useMemo(() => difficultyMap[params.difficulty], [params.difficulty]);
 
   const handleTextToSpeech = useCallback(async (text: string) => {
     try {
@@ -74,6 +75,11 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }, []);
 
   const loadQuestions = useCallback(async () => {
+    if (!difficultyConfig) {
+        setErrorMessage('Invalid difficulty level.');
+        setQuizState('error');
+        return;
+    }
     setQuizState('loading');
     setIsAnswered(false);
     setSelectedAnswerIndex(null);
@@ -83,7 +89,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('idle');
     setQuizId(stringToHex(crypto.randomUUID(), { size: 32 }));
     try {
-      const fetchedQuestions = await getQuizQuestions(difficulty);
+      const fetchedQuestions = await getQuizQuestions(params.difficulty, difficultyConfig.questionCount);
       setQuestions(fetchedQuestions);
       setQuizState('active');
       if (fetchedQuestions.length > 0) {
@@ -93,7 +99,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred.');
       setQuizState('error');
     }
-  }, [difficulty, handleTextToSpeech]);
+  }, [params.difficulty, difficultyConfig, handleTextToSpeech]);
 
   useEffect(() => {
     if(ready && authenticated) {
@@ -146,10 +152,10 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       const walletClient = createWalletClient({
         account: embeddedWallet.address as Hex,
         chain: base,
-        transport: http(), 
+        transport: http(),
       });
 
-      const difficultyLevel = difficultyMap[difficulty.toLowerCase()];
+      const difficultyLevel = difficultyConfig.id;
 
       const { request } = await walletClient.simulateContract({
         address: contractAddress,
@@ -202,7 +208,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const currentQuestion = questions[currentQuestionIndex];
   const progressValue = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
-  if (quizState === 'loading' || !ready) {
+  if (quizState === 'loading' || !ready || !difficultyConfig) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-2xl animate-pulse">
@@ -254,6 +260,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   if (quizState === 'completed') {
     const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+    const passed = percentage >= difficultyConfig.passPercentage;
 
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -268,27 +275,30 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
               <p className="text-6xl font-bold text-primary">
                 {score} / {questions.length}
               </p>
-              <p className="text-2xl font-semibold text-accent">{percentage}%</p>
+              <p className={cn("text-2xl font-semibold", passed ? "text-green-500" : "text-destructive")}>{percentage}%</p>
+              <p className="text-sm text-muted-foreground">{passed ? "Congratulations, you passed!" : `You needed ${difficultyConfig.passPercentage}% to pass.`}</p>
             </div>
-            <Card className="p-4 space-y-3">
-              <div className="flex items-center justify-center gap-2">
-                <Award className="h-6 w-6 text-primary" />
-                <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Claim your CQT tokens on Base for completing this quiz!
-              </p>
-              <Button onClick={handleClaimRewards} disabled={claimState === 'claiming' || claimState === 'claimed'}>
-                {claimState === 'claiming' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
-              </Button>
-              {claimState === 'claim_error' && (
-                  <p className="text-xs text-destructive flex items-center justify-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      Something went wrong. Please try again.
-                  </p>
-              )}
-            </Card>
+            {passed && (
+              <Card className="p-4 space-y-3">
+                <div className="flex items-center justify-center gap-2">
+                  <Award className="h-6 w-6 text-primary" />
+                  <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Claim your CQT tokens on Base for completing this quiz!
+                </p>
+                <Button onClick={handleClaimRewards} disabled={claimState === 'claiming' || claimState === 'claimed'}>
+                  {claimState === 'claiming' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
+                </Button>
+                {claimState === 'claim_error' && (
+                    <p className="text-xs text-destructive flex items-center justify-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Something went wrong. Please try again.
+                    </p>
+                )}
+              </Card>
+            )}
             {embeddedWallet && (
               <div className="space-y-2 text-left text-sm">
                  <div className="flex items-center gap-2">
@@ -350,7 +360,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                   size="lg"
                   className={cn(
                     "justify-start text-left h-auto py-3 whitespace-normal transition-all duration-300",
-                    isAnswered && (isCorrect ? "border-primary bg-primary/10 text-foreground" : ""),
+                    isAnswered && (isCorrect ? "border-green-500 bg-green-500/10 text-foreground" : ""),
                     isAnswered && isSelected && !isCorrect && "border-destructive bg-destructive/10 text-foreground"
                   )}
                   onClick={() => handleAnswerSelect(index)}
@@ -358,9 +368,9 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                 >
                   <div className="flex items-center w-full">
                     <span className="flex-grow">{answer}</span>
-                    {isAnswered && isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-primary ml-2 flex-shrink-0" />}
+                    {isAnswered && isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-green-500 ml-2 flex-shrink-0" />}
                     {isAnswered && isSelected && !isCorrect && <XCircle className="h-5 w-5 text-destructive ml-2 flex-shrink-0" />}
-                    {isAnswered && !isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-primary ml-2 flex-shrink-0" />}
+                    {isAnswered && !isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-green-500 ml-2 flex-shrink-0" />}
                   </div>
                 </Button>
               );
@@ -384,3 +394,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    

@@ -1,30 +1,31 @@
+
 'use server';
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
-import { textToSpeechFlow, TextToSpeechOutput } from '@/ai/flows/text-to-speech';
+import { textToSpeech, TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 
 const getTopicForDifficulty = (difficulty: string): string => {
   switch (difficulty.toLowerCase()) {
     case 'beginner':
-      return 'Blockchain & Smart Contracts';
+      return 'Blockchain Fundamentals & Basic Trading';
     case 'intermediate':
-      return 'DeFi & Web3';
+      return 'Smart Contracts, DeFi Protocols & NFTs';
     case 'advanced':
-      return 'Solidity';
+      return 'Solidity, Cross-chain concepts, MEV, and Protocol Governance';
     case 'expert':
-      return 'Cryptography & Security';
+      return 'Advanced Smart Contract Security, Yield Farming, and Flash Loans';
     case 'master':
-      return 'Advanced Blockchain Concepts';
+      return 'Advanced Cryptography, Protocol Research, and Layer 2 Scaling';
     default:
       return 'Web3 Development';
   }
 };
 
-export async function getQuizQuestions(difficulty: string): Promise<GenerateQuizQuestionsOutput> {
+export async function getQuizQuestions(difficulty: string, numberOfQuestions: number): Promise<GenerateQuizQuestionsOutput> {
   const input: GenerateQuizQuestionsInput = {
     difficultyLevel: difficulty,
     topic: getTopicForDifficulty(difficulty),
-    numberOfQuestions: 10,
+    numberOfQuestions: numberOfQuestions,
   };
 
   try {
@@ -48,3 +49,5 @@ export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
     throw new Error('Could not convert text to speech.');
   }
 }
+
+    
