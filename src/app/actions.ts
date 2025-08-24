@@ -1,7 +1,8 @@
+
 'use server';
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
-import { textToSpeech, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
+import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits } from 'viem';
