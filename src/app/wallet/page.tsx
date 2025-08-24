@@ -102,17 +102,13 @@ export default function WalletPage() {
             const amountToSend = parseUnits(values.amount, tokenInfo.decimals);
             
             const unsignedTx = {
-                to: values.recipient as Hex,
+                to: tokenInfo.tokenAddress,
                 chainId: base.id,
-                value: BigInt(0), // Not sending native currency
                 data: `0xa9059cbb${values.recipient.substring(2).padStart(64, '0')}${amountToSend.toString(16).padStart(64, '0')}` as Hex,
+                value: '0x0'
             };
 
-            const {hash} = await sendTransaction(unsignedTx, {
-                // We must specify the token address for the ERC20 transfer
-                // when we are not sending the native currency.
-                address: tokenInfo.tokenAddress,
-            });
+            const {hash} = await sendTransaction(unsignedTx);
 
             toast({
                 title: 'Transaction Sent!',
