@@ -3,6 +3,7 @@
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
 import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-speech';
+import { explainQuestion, type ExplainQuestionInput, type ExplainQuestionOutput } from '@/ai/flows/explain-question';
 import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits, type Hex } from 'viem';
@@ -125,6 +126,24 @@ export async function getQuizQuestions(difficulty: string, numberOfQuestions: nu
     throw new Error('Could not fetch quiz questions. Please try again later.');
   }
 }
+
+export async function getHint(question: string, answers: string[]): Promise<ExplainQuestionOutput> {
+  const input: ExplainQuestionInput = {
+    question,
+    answers,
+  };
+  try {
+    const response = await explainQuestion(input);
+    if (!response || !response.explanation) {
+      throw new Error('AI failed to generate a hint.');
+    }
+    return response;
+  } catch (error) {
+    console.error('Error getting hint:', error);
+    throw new Error('Could not get a hint at this time. Please try again.');
+  }
+}
+
 
 export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
   try {

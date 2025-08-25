@@ -3,14 +3,14 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { getQuizQuestions, submitScore, textToSpeech, getTokenInfo } from '@/app/actions';
+import { getQuizQuestions, submitScore, textToSpeech, getTokenInfo, getHint } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb } from 'lucide-react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { type Hex, encodeFunctionData, keccak256, encodePacked } from 'viem';
@@ -52,6 +52,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [quizId, setQuizId] = useState<string | null>(null);
   const [claimState, setClaimState] = useState<ClaimState>('idle');
   const [tokenInfo, setTokenInfo] = useState<TokenInfo>({ symbol: null });
+  const [hint, setHint] = useState<{ forQuestion: number; text: string } | null>(null);
+  const [isHintLoading, setIsHintLoading] = useState(false);
   
   const { toast } = useToast();
   const { ready, authenticated, user } = usePrivy();
@@ -93,6 +95,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setScore(0);
     setAudioUrl(null);
     setClaimState('idle');
+    setHint(null);
+    setIsHintLoading(false);
     setQuizId(crypto.randomUUID());
     try {
       const fetchedQuestions = await getQuizQuestions(params.difficulty, difficultyConfig.questionCount);
@@ -121,6 +125,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     setSelectedAnswerIndex(answerIndex);
     setIsAnswered(true);
+    setHint(null);
 
     if (answerIndex === questions[currentQuestionIndex].correctAnswerIndex) {
       setScore(score + 1);
@@ -157,11 +162,33 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setSelectedAnswerIndex(null);
       setIsAnswered(false);
       setAudioUrl(null);
+      setHint(null);
       handleTextToSpeech(questions[nextIndex].question);
     } else {
       handleQuizCompletion();
     }
   };
+
+  const handleGetHint = async () => {
+    if (!currentQuestion) return;
+    setIsHintLoading(true);
+    setHint(null);
+    try {
+      const response = await getHint(currentQuestion.question, currentQuestion.answers);
+      setHint({
+        forQuestion: currentQuestionIndex,
+        text: response.explanation
+      });
+    } catch(error) {
+      toast({
+        variant: 'destructive',
+        title: "Hint Failed",
+        description: error instanceof Error ? error.message : "Could not generate a hint.",
+      });
+    } finally {
+      setIsHintLoading(false);
+    }
+  }
 
   const handleClaimRewards = async () => {
     if (!embeddedWallet || !quizId || !user || !difficultyConfig) {
@@ -373,12 +400,26 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           <Progress value={progressValue} className="w-full mt-2" />
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-center gap-4">
-            <p className="text-lg sm:text-xl font-semibold text-center text-card-foreground">{currentQuestion.question}</p>
-            <Button onClick={playAudio} variant="ghost" size="icon" disabled={!audioUrl}>
-              <Volume2 className="h-6 w-6" />
-            </Button>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-lg sm:text-xl font-semibold text-center text-card-foreground flex-grow">{currentQuestion.question}</p>
+            <div className='flex flex-col gap-2'>
+              <Button onClick={playAudio} variant="ghost" size="icon" disabled={!audioUrl}>
+                <Volume2 className="h-6 w-6" />
+              </Button>
+              <Button onClick={handleGetHint} variant="ghost" size="icon" disabled={isHintLoading || isAnswered}>
+                 {isHintLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Lightbulb className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
+
+          {hint && hint.forQuestion === currentQuestionIndex && (
+             <Alert>
+              <Lightbulb className="h-4 w-4" />
+              <AlertTitle>Hint</AlertTitle>
+              <AlertDescription>{hint.text}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {currentQuestion.answers.map((answer, index) => {
               const isCorrect = index === currentQuestion.correctAnswerIndex;
