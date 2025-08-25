@@ -6,6 +6,7 @@ import { Star, LogIn, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -52,8 +53,8 @@ export default function LandingPage() {
                          {(isNotifying || (ready && authenticated)) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Start Your Quest
                     </Button>
-                     <Button size="lg" variant="secondary" onClick={() => router.push('#features')}>
-                        Learn More
+                     <Button asChild size="lg" variant="secondary">
+                        <Link href="/learn-more">Learn More</Link>
                     </Button>
                 </div>
             </div>
