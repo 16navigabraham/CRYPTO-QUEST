@@ -22,8 +22,11 @@ export async function createUser(privyDid: string, walletAddress: string, userna
       }),
     });
     const data = await response.json();
-    if (!response.ok && response.status !== 409) { // 409 is 'User already exists', which is fine.
+    
+    // A 409 Conflict means the user already exists, which is not an error for this flow.
+    if (!response.ok && response.status !== 409) { 
         console.error('Failed to create user:', data.message);
+        // We don't throw an error to the client here as it's not a critical UI-blocking event.
     }
     return data;
   } catch (error) {
@@ -36,7 +39,7 @@ export async function createUser(privyDid: string, walletAddress: string, userna
 export async function submitScore(privyDid: string, quizId: string, score: number, difficulty: string) {
   if (!BACKEND_URL) {
     console.error('BACKEND_URL is not set. Cannot submit score.');
-    throw new Error('Server configuration error.');
+    throw new Error('Server configuration error. Please contact support.');
   }
 
   try {
@@ -53,21 +56,17 @@ export async function submitScore(privyDid: string, quizId: string, score: numbe
 
     const data = await response.json();
     
-    // If the response is not OK, but it's a 409 Conflict, it means the quiz was already completed.
-    // This is not a critical failure, so we can allow the user to proceed.
-    if (!response.ok && response.status !== 409) {
-      console.error('Backend returned an error:', data);
-      throw new Error(data.message || `Failed to submit score. Status: ${response.status}`);
+    if (!response.ok) {
+      // The backend provides a 'message' field on error, which we can pass to the client.
+      throw new Error(data.message || `An unknown error occurred. Status: ${response.status}`);
     }
 
-    if (response.status === 409) {
-      console.log('Quiz already completed, proceeding...');
-    }
-
+    // Return the successful response data
     return data;
   } catch (error) {
     console.error('Error submitting score:', error);
-    // Re-throw the error so the client knows something went wrong.
+    // Re-throw the error so the client-side component can catch it and display a toast.
+    // The error will now have a user-friendly message from the backend or the generic one from above.
     throw error;
   }
 }

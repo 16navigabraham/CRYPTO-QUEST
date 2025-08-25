@@ -129,24 +129,26 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
 
-  const handleQuizCompletion = useCallback(async (finalScore: number) => {
+  const handleQuizCompletion = useCallback(async () => {
     setQuizState('completed');
     if (!user || !quizId) return;
+
     try {
         await submitScore(user.id, quizId, percentage, params.difficulty);
         toast({
-            title: "Quiz Complete!",
+            title: "Score Saved!",
             description: "Your score has been saved to the leaderboard.",
         });
     } catch (error) {
         console.error("Failed to submit score:", error);
-         toast({
+        toast({
             variant: 'destructive',
             title: "Score Sync Failed",
             description: error instanceof Error ? error.message : "Could not save your score to the server.",
         });
     }
   }, [user, quizId, params.difficulty, percentage, toast]);
+
 
   const handleNextQuestion = () => {
     const nextIndex = currentQuestionIndex + 1;
@@ -157,7 +159,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setAudioUrl(null);
       handleTextToSpeech(questions[nextIndex].question);
     } else {
-      handleQuizCompletion(score);
+      handleQuizCompletion();
     }
   };
 
