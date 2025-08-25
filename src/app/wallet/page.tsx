@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Loader2, Send, Wallet as WalletIcon, Copy, Check, LogOut } from 'lucide-react';
+import { ArrowLeft, Loader2, Send, Wallet as WalletIcon, Copy, Check, LogOut, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
@@ -19,6 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { parseUnits, type Hex } from 'viem';
 import { base } from 'viem/chains';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const sendSchema = z.object({
   recipient: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
@@ -194,6 +195,13 @@ export default function WalletPage() {
                  </div>
 
                 <div>
+                     <Alert variant="default" className="mb-4">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Gas Fees Required</AlertTitle>
+                        <AlertDescription>
+                            You will need a small amount of Base ETH in this wallet to pay for transaction fees (gas) when sending tokens.
+                        </AlertDescription>
+                    </Alert>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                              <FormField

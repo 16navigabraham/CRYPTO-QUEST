@@ -17,6 +17,7 @@ import { type Hex, encodeFunctionData, keccak256, encodePacked } from 'viem';
 import { base } from 'viem/chains';
 import { useToast } from '@/hooks/use-toast';
 import { contractAbi, contractAddress } from '@/lib/contract';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type Question = {
   question: string;
@@ -305,6 +306,15 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                 <p className="text-sm text-muted-foreground">
                   Claim your {tokenInfo.symbol || 'tokens'} on Base for completing this quiz!
                 </p>
+                
+                 <Alert variant="default" className="text-left">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Gas Fees Required</AlertTitle>
+                  <AlertDescription>
+                    You will need a small amount of Base ETH in your wallet to pay for transaction fees (gas) to claim your rewards.
+                  </AlertDescription>
+                </Alert>
+
                 <Button onClick={handleClaimRewards} disabled={isSending || claimState === 'claimed'}>
                   {(isSending || claimState === 'claiming') && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
@@ -412,5 +422,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
