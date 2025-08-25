@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -27,6 +28,9 @@ const nextConfig: NextConfig = {
   experimental: {
     // This is to allow cross-origin requests in development.
     allowedDevOrigins: ["**"],
+  },
+  env: {
+    BACKEND_URL: process.env.BACKEND_URL,
   }
 };
 
