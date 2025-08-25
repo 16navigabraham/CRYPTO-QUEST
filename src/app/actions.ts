@@ -185,3 +185,45 @@ export async function getTokenInfo(userAddress: `0x${string}`) {
         };
     }
 }
+
+export async function getContractRewardPool(): Promise<{ balance: string; symbol: string; }> {
+    try {
+         const [balance, tokenAddress] = await Promise.all([
+            publicClient.readContract({
+                address: contractAddress,
+                abi: contractAbi,
+                functionName: 'getContractBalance',
+            }),
+            publicClient.readContract({
+                address: contractAddress,
+                abi: contractAbi,
+                functionName: 'rewardToken',
+            })
+         ]);
+
+        const [decimals, symbol] = await Promise.all([
+             publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'decimals',
+            }),
+            publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'symbol',
+            })
+        ]);
+        
+        return {
+            balance: formatUnits(balance, decimals),
+            symbol,
+        };
+
+    } catch (error) {
+        console.error('Error fetching contract reward pool:', error);
+        return {
+            balance: '0',
+            symbol: 'Tokens',
+        };
+    }
+}
