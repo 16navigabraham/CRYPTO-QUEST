@@ -181,7 +181,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(percentage), BigInt(1)] // Using a default multiplier of 1
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(percentage), BigInt(100)] // Using a default multiplier of 1x (100)
           }),
       };
 
@@ -423,3 +423,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    
