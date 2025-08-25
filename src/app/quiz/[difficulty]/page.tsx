@@ -422,3 +422,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    

@@ -43,7 +43,6 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
         appearance: {
           theme: 'light',
           accentColor: '#0085FF',
-          logo: '/logo.svg',
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
@@ -56,3 +55,5 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
     </PrivyProvider>
   );
 }
+
+    
