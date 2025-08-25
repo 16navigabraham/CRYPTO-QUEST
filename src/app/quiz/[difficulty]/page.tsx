@@ -127,16 +127,16 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     }
   };
 
+  const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+
   const handleQuizCompletion = useCallback(async (finalScore: number) => {
     setQuizState('completed');
     if (!user || !quizId) return;
     try {
-        // Since there's no backend, we'll comment this out for now to prevent errors.
-        // When a backend is available, this can be re-enabled.
-        // await submitScore(user.id, quizId, finalScore, params.difficulty);
+        await submitScore(user.id, quizId, percentage, params.difficulty);
         toast({
             title: "Quiz Complete!",
-            description: "Your quiz results have been recorded locally.",
+            description: "Your score has been saved to the leaderboard.",
         });
     } catch (error) {
         console.error("Failed to submit score:", error);
@@ -146,7 +146,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             description: error instanceof Error ? error.message : "Could not save your score to the server.",
         });
     }
-  }, [user, quizId, params.difficulty, toast]);
+  }, [user, quizId, params.difficulty, percentage, toast]);
 
   const handleNextQuestion = () => {
     const nextIndex = currentQuestionIndex + 1;
@@ -175,7 +175,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     try {
       const quizIdHashed = keccak256(encodePacked(['string'], [quizId]));
-      const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
       
       const unsignedTx = {
           to: contractAddress,
@@ -280,7 +279,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     );
   }
 
-  const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
   const passed = percentage >= difficultyConfig.passPercentage;
 
   if (quizState === 'completed') {
