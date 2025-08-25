@@ -160,7 +160,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   };
 
   const handleClaimRewards = async () => {
-    if (!embeddedWallet || !quizId || !user) {
+    if (!embeddedWallet || !quizId || !user || !difficultyConfig) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -173,6 +173,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     try {
       const quizIdHashed = keccak256(encodePacked(['string'], [quizId]));
+      const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
       
       const unsignedTx = {
           to: contractAddress,
@@ -180,7 +181,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(score), BigInt(1)] // Using a default multiplier of 1
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(percentage), BigInt(1)] // Using a default multiplier of 1
           }),
       };
 
@@ -422,5 +423,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
