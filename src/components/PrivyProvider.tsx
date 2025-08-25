@@ -55,5 +55,3 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
     </PrivyProvider>
   );
 }
-
-    

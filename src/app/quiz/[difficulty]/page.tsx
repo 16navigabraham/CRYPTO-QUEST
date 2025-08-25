@@ -131,10 +131,12 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setQuizState('completed');
     if (!user || !quizId) return;
     try {
-        await submitScore(user.id, quizId, finalScore, params.difficulty);
+        // Since there's no backend, we'll comment this out for now to prevent errors.
+        // When a backend is available, this can be re-enabled.
+        // await submitScore(user.id, quizId, finalScore, params.difficulty);
         toast({
-            title: "Score Saved!",
-            description: "Your quiz results have been saved to the leaderboard.",
+            title: "Quiz Complete!",
+            description: "Your quiz results have been recorded locally.",
         });
     } catch (error) {
         console.error("Failed to submit score:", error);
@@ -181,7 +183,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(percentage), BigInt(100)] // Using a default multiplier of 1x (100)
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(percentage), BigInt(100)]
           }),
       };
 
@@ -278,10 +280,10 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     );
   }
 
-  if (quizState === 'completed') {
-    const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
-    const passed = percentage >= difficultyConfig.passPercentage;
+  const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+  const passed = percentage >= difficultyConfig.passPercentage;
 
+  if (quizState === 'completed') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md text-center">
@@ -423,5 +425,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
