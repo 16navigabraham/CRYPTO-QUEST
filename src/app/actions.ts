@@ -21,13 +21,15 @@ export async function createUser(privyDid: string, walletAddress: string, userna
         username,
       }),
     });
-    const data = await response.json();
     
     // A 409 Conflict means the user already exists, which is not an error for this flow.
-    if (!response.ok && response.status !== 409) { 
-        console.error('Failed to create user:', data.message);
+    if (!response.ok && response.status !== 409) {
+        const errorData = await response.json();
+        console.error('Failed to create user:', errorData.message);
         // We don't throw an error to the client here as it's not a critical UI-blocking event.
     }
+    
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error creating user:', error);
@@ -50,7 +52,7 @@ export async function submitScore(privyDid: string, quizId: string, score: numbe
         privyDid, 
         quizId, 
         score, 
-        difficulty 
+        difficulty: difficulty.toLowerCase(),
       }),
     });
 
