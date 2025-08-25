@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { getQuizQuestions, submitScore, textToSpeech } from '@/app/actions';
+import { getQuizQuestions, submitScore, textToSpeech, getTokenInfo } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -26,6 +26,9 @@ type Question = {
 
 type QuizState = 'loading' | 'active' | 'completed' | 'error';
 type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
+type TokenInfo = {
+    symbol: string | null;
+}
 
 const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; } } = {
   beginner: { id: 0, questionCount: 20, passPercentage: 70 },
@@ -47,6 +50,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const audioRef = useRef<HTMLAudioElement>(null);
   const [quizId, setQuizId] = useState<string | null>(null);
   const [claimState, setClaimState] = useState<ClaimState>('idle');
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo>({ symbol: null });
   
   const { toast } = useToast();
   const { ready, authenticated, user } = usePrivy();
@@ -105,8 +109,11 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   useEffect(() => {
     if(ready && authenticated) {
         loadQuestions();
+        if (embeddedWallet?.address) {
+            getTokenInfo(embeddedWallet.address as `0x${string}`).then(info => setTokenInfo({ symbol: info.symbol }));
+        }
     }
-  }, [loadQuestions, ready, authenticated]);
+  }, [loadQuestions, ready, authenticated, embeddedWallet?.address]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (isAnswered) return;
@@ -298,7 +305,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                   <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Claim your CQT tokens on Base for completing this quiz!
+                  Claim your {tokenInfo.symbol || 'tokens'} on Base for completing this quiz!
                 </p>
                 <Button onClick={handleClaimRewards} disabled={isSending || claimState === 'claimed'}>
                   {(isSending || claimState === 'claiming') && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -407,5 +414,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    

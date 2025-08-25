@@ -167,7 +167,7 @@ export default function LeaderboardPage() {
                       <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <p className="text-xl font-bold">{player.name}</p>
-                    <Badge variant="secondary">{player.score} CQP</Badge>
+                    <Badge variant="secondary">{player.score} Points</Badge>
                   </div>
                 </Card>
               ))}
@@ -195,7 +195,7 @@ export default function LeaderboardPage() {
                         <span>{player.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-medium">{player.score} CQP</TableCell>
+                    <TableCell className="text-right font-medium">{player.score} Points</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
