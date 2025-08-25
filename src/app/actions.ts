@@ -7,7 +7,7 @@ import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits, type Hex } from 'viem';
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
 // --- User Management ---
 export async function createUser(privyDid: string, walletAddress: string, username: string) {

@@ -29,9 +29,6 @@ const nextConfig: NextConfig = {
     // This is to allow cross-origin requests in development.
     allowedDevOrigins: ["**"],
   },
-  env: {
-    BACKEND_URL: process.env.BACKEND_URL,
-  }
 };
 
 export default nextConfig;
