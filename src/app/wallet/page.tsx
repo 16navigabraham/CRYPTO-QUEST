@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Loader2, Send, Wallet as WalletIcon, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, Send, Wallet as WalletIcon, Copy, Check, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
@@ -18,6 +18,7 @@ import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { parseUnits, type Hex } from 'viem';
 import { base } from 'viem/chains';
+import { Separator } from '@/components/ui/separator';
 
 const sendSchema = z.object({
   recipient: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
@@ -36,7 +37,7 @@ type TokenInfo = {
 export default function WalletPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const { ready, authenticated } = usePrivy();
+    const { ready, authenticated, exportWallet } = usePrivy();
     const { wallets } = useWallets();
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
     const { sendTransaction, isSending } = useSendTransaction();
@@ -175,9 +176,9 @@ export default function WalletPage() {
           <CardContent className="space-y-6">
                 <Card className="bg-muted/50 p-4 text-center">
                      <CardTitle className="text-4xl font-bold">
-                        {tokenInfo ? `${parseFloat(tokenInfo.balance).toFixed(2)}` : '0.00'}
+                        {tokenInfo ? `${parseFloat(tokenInfo.balance).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '0.00'}
                     </CardTitle>
-                    <CardDescription className="font-semibold text-lg">{tokenInfo?.symbol || 'CQT'}</CardDescription>
+                    <CardDescription className="font-semibold text-lg">{tokenInfo?.symbol || 'Tokens'}</CardDescription>
                 </Card>
             
                  <div className="space-y-2">
@@ -227,6 +228,21 @@ export default function WalletPage() {
                             </Button>
                         </form>
                     </Form>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Wallet Actions</h3>
+                    <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={exportWallet}
+                    >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Export Private Key
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center pt-1">
+                        Export your private key to use in other wallets like MetaMask.
+                    </p>
                 </div>
           </CardContent>
         </Card>
