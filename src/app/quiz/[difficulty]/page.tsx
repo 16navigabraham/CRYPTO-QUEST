@@ -172,8 +172,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     try {
       const quizIdHashed = keccak256(encodePacked(['string'], [quizId]));
-      const difficultyLevel = BigInt(difficultyConfig.id);
-      const scoreAsBigInt = BigInt(score);
       
       const unsignedTx = {
           to: contractAddress,
@@ -181,7 +179,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(score), BigInt(1)] // Using a default multiplier of 1
           }),
       };
 
@@ -414,3 +412,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    
