@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle } from 'lucide-react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { type Hex, stringToHex, encodeFunctionData } from 'viem';
+import { type Hex, encodeFunctionData, keccak256, encodePacked } from 'viem';
 import { base } from 'viem/chains';
 import { useToast } from '@/hooks/use-toast';
 import { contractAbi, contractAddress } from '@/lib/contract';
@@ -164,7 +164,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('claiming');
 
     try {
-      const quizIdAsHex = stringToHex(quizId.slice(0, 32), { size: 32 });
+      const quizIdHashed = keccak256(encodePacked(['string'], [quizId]));
       const difficultyLevel = BigInt(difficultyConfig.id);
       const scoreAsBigInt = BigInt(score);
       
@@ -174,7 +174,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdAsHex, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
+            args: [quizIdHashed, difficultyLevel, scoreAsBigInt, BigInt(1)] // Using a default multiplier of 1
           }),
       };
 
@@ -407,3 +407,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    
