@@ -208,6 +208,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     try {
       const quizIdHashed = keccak256(encodePacked(['string'], [quizId]));
+      const scoreInPercentage = Math.round((score / numberOfQuestions) * 100);
       
       const unsignedTx = {
           to: contractAddress,
@@ -215,7 +216,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(score), BigInt(numberOfQuestions)]
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(scoreInPercentage), BigInt(numberOfQuestions)]
           }),
       };
 
