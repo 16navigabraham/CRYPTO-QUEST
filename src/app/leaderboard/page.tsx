@@ -107,7 +107,7 @@ export default function LeaderboardPage() {
         const leaderboardData = await getLeaderboard();
         const formattedData = leaderboardData.map((p: any) => ({
             rank: p.rank,
-            name: p.name || `User...${p.walletAddress.substring(p.walletAddress.length - 4)}`,
+            name: p.username || `User...${p.walletAddress.substring(p.walletAddress.length - 4)}`,
             score: p.score,
             avatar: p.avatar,
         }));
