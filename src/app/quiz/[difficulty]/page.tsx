@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { getQuizQuestions, submitScore, textToSpeech, getTokenInfo, getHint } from '@/app/actions';
+import { getQuizQuestions, submitScore, textToSpeech, getWalletDetails, getHint } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -27,9 +27,6 @@ type Question = {
 
 type QuizState = 'selection' | 'loading' | 'active' | 'completed' | 'error';
 type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
-type TokenInfo = {
-    symbol: string | null;
-}
 
 const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; } } = {
   beginner: { id: 0, questionCount: 20, passPercentage: 70 },
@@ -51,7 +48,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const audioRef = useRef<HTMLAudioElement>(null);
   const [quizId, setQuizId] = useState<string | null>(null);
   const [claimState, setClaimState] = useState<ClaimState>('idle');
-  const [tokenInfo, setTokenInfo] = useState<TokenInfo>({ symbol: null });
+  const [rewardTokenSymbol, setRewardTokenSymbol] = useState<string | null>(null);
   const [hint, setHint] = useState<{ forQuestion: number; text: string } | null>(null);
   const [isHintLoading, setIsHintLoading] = useState(false);
   const [numberOfQuestions, setNumberOfQuestions] = useState(0);
@@ -62,15 +59,15 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const { sendTransaction, isSending } = useSendTransaction();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
   const router = useRouter();
+  
+  const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
+  const difficultyConfig = useMemo(() => difficultyMap[params.difficulty], [params.difficulty]);
 
   useEffect(() => {
     if (ready && !authenticated) {
       router.push('/login');
     }
   }, [ready, authenticated, router]);
-
-  const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
-  const difficultyConfig = useMemo(() => difficultyMap[params.difficulty], [params.difficulty]);
 
   const handleTextToSpeech = useCallback(async (text: string) => {
     try {
@@ -115,7 +112,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   useEffect(() => {
     if(ready && authenticated && embeddedWallet?.address) {
-        getTokenInfo(embeddedWallet.address as `0x${string}`).then(info => setTokenInfo({ symbol: info.symbol }));
+        getWalletDetails(embeddedWallet.address as `0x${string}`).then(details => setRewardTokenSymbol(details.rewardToken.symbol));
     }
   }, [ready, authenticated, embeddedWallet?.address]);
 
@@ -131,7 +128,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     }
   };
 
-  const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+  const percentage = numberOfQuestions > 0 ? Math.round((score / numberOfQuestions) * 100) : 0;
 
   const handleQuizCompletion = useCallback(async () => {
     setQuizState('completed');
@@ -139,10 +136,10 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     try {
       const result = await submitScore(user.wallet.address, quizId, score, params.difficulty);
-      if (result.isDuplicate) {
+       if (result.isDuplicate) {
         toast({
           title: "Score Not Saved",
-          description: "You have already completed this quiz.",
+          description: "You have already completed a quiz with this ID.",
           variant: 'default'
         });
       } else {
@@ -218,7 +215,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(percentage), BigInt(100)]
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(score), BigInt(numberOfQuestions)]
           }),
       };
 
@@ -400,7 +397,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                   <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Claim your {tokenInfo.symbol || 'tokens'} on Base for completing this quiz!
+                  Claim your {rewardTokenSymbol || 'tokens'} on Base for completing this quiz!
                 </p>
                 
                  <Alert variant="default" className="text-left">
@@ -532,5 +529,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    

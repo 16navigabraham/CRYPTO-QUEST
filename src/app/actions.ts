@@ -11,7 +11,8 @@ import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
 async function uploadToPinata(file: File) {
-    if (!process.env.PINATA_JWT_KEY) {
+    const pinataJwtKey = process.env.PINATA_JWT_KEY;
+    if (!pinataJwtKey) {
         throw new Error('Pinata API key is not configured.');
     }
     const formData = new FormData();
@@ -21,7 +22,7 @@ async function uploadToPinata(file: File) {
         const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${process.env.PINATA_JWT_KEY}`,
+                Authorization: `Bearer ${pinataJwtKey}`,
             },
             body: formData,
         });
@@ -72,7 +73,7 @@ export async function createUser(walletAddress: string, username: string) {
 
 export async function updateUser(walletAddress: string, username: string, profilePictureFile?: File) {
     try {
-      let profilePictureUrl = null;
+      let profilePictureUrl: string | null = null;
       if (profilePictureFile) {
         profilePictureUrl = await uploadToPinata(profilePictureFile);
       }
@@ -114,7 +115,6 @@ export async function getUserProfile(walletAddress: string) {
 
 // --- Score Management ---
 export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string) {
-
   try {
     const response = await fetch(`${BACKEND_URL}/api/scores`, {
       method: 'POST',
