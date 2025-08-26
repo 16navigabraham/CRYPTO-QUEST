@@ -79,15 +79,25 @@ export async function updateUser(walletAddress: string, username: string, profil
         profilePictureUrl = await uploadToPinata(profilePictureFile);
       }
 
+      const requestBody: {
+        walletAddress: string;
+        username: string;
+        profilePicture?: string | null;
+      } = {
+        walletAddress,
+        username,
+      };
+
+      if (profilePictureUrl) {
+        requestBody.profilePicture = profilePictureUrl;
+      }
+
       const response = await fetch(`${BACKEND_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          walletAddress,
-          username,
-          profilePicture: profilePictureUrl
-        }),
+        body: JSON.stringify(requestBody),
       });
+
       if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to update user profile.');
@@ -335,5 +345,7 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
         };
     }
 }
+
+    
 
     
