@@ -11,13 +11,12 @@ import { erc20Abi, formatUnits, type Hex } from 'viem';
 const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
 // --- User Management ---
-export async function createUser(privyDid: string, walletAddress: string, username: string) {
+export async function createUser(walletAddress: string, username: string) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        privyDid,
         walletAddress,
         username,
       }),
@@ -39,7 +38,7 @@ export async function createUser(privyDid: string, walletAddress: string, userna
 }
 
 // --- Score Management ---
-export async function submitScore(privyDid: string, quizId: string, score: number, difficulty: string) {
+export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string) {
   if (!BACKEND_URL) {
     console.error('BACKEND_URL is not set. Cannot submit score.');
     throw new Error('Server configuration error. Please contact support.');
@@ -50,7 +49,7 @@ export async function submitScore(privyDid: string, quizId: string, score: numbe
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        privyDid, 
+        walletAddress, 
         quizId, 
         score, 
         difficulty: difficulty.toLowerCase(),
@@ -60,6 +59,11 @@ export async function submitScore(privyDid: string, quizId: string, score: numbe
     const data = await response.json();
     
     if (!response.ok) {
+      if (response.status === 409) {
+          // This is not a critical error for the user, it just means they already did the quiz.
+          console.log("Score submission ignored: Quiz already completed.");
+          return { ...data, isDuplicate: true };
+      }
       // The backend provides a 'message' field on error, which we can pass to the client.
       throw new Error(data.message || `An unknown error occurred. Status: ${response.status}`);
     }

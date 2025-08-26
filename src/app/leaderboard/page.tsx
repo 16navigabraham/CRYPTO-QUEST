@@ -105,10 +105,9 @@ export default function LeaderboardPage() {
       setLoading(true);
       try {
         const leaderboardData = await getLeaderboard();
-        // The API returns 'name' and 'score', which matches our component props.
         const formattedData = leaderboardData.map((p: any) => ({
             rank: p.rank,
-            name: p.name || `User ${p.privyDid.substring(0, 6)}`,
+            name: p.name || `User...${p.walletAddress.substring(p.walletAddress.length - 4)}`,
             score: p.score,
             avatar: p.avatar,
         }));

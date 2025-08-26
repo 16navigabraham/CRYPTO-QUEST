@@ -56,7 +56,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [isHintLoading, setIsHintLoading] = useState(false);
   
   const { toast } = useToast();
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
   const { sendTransaction, isSending } = useSendTransaction();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
@@ -136,14 +136,22 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   const handleQuizCompletion = useCallback(async () => {
     setQuizState('completed');
-    if (!user || !quizId) return;
+    if (!embeddedWallet?.address || !quizId) return;
 
     try {
-        await submitScore(user.id, quizId, percentage, params.difficulty);
-        toast({
-            title: "Score Saved!",
-            description: "Your score has been saved to the leaderboard.",
-        });
+        const result = await submitScore(embeddedWallet.address, quizId, score, params.difficulty);
+        if (result.isDuplicate) {
+             toast({
+                title: "Score Not Saved",
+                description: "You have already completed this quiz.",
+                variant: 'default'
+            });
+        } else {
+             toast({
+                title: "Score Saved!",
+                description: "Your score has been saved to the leaderboard.",
+            });
+        }
     } catch (error) {
         console.error("Failed to submit score:", error);
         toast({
@@ -152,7 +160,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             description: error instanceof Error ? error.message : "Could not save your score to the server.",
         });
     }
-  }, [user, quizId, params.difficulty, percentage, toast]);
+  }, [embeddedWallet?.address, quizId, params.difficulty, score, toast]);
 
 
   const handleNextQuestion = () => {
@@ -191,7 +199,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }
 
   const handleClaimRewards = async () => {
-    if (!embeddedWallet || !quizId || !user || !difficultyConfig) {
+    if (!embeddedWallet || !quizId || !difficultyConfig) {
       toast({
         variant: 'destructive',
         title: 'Error',

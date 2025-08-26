@@ -9,6 +9,15 @@ function getUsername(user: User): string {
     if (user.twitter?.username) {
         return user.twitter.username;
     }
+    if (user.github?.username) {
+        return user.github.username;
+    }
+     if (user.discord?.username) {
+        return user.discord.username;
+    }
+    if (user.email?.address) {
+        return user.email.address.split('@')[0];
+    }
     return 'Anonymous';
 }
 
@@ -21,7 +30,7 @@ function InnerPrivyProvider({ children }: { children: React.ReactNode }) {
             if (ready && authenticated && user) {
                 const embeddedWallet = user.wallets?.find(w => w.walletClientType === 'privy');
                 if (embeddedWallet) {
-                   await createUser(user.id, embeddedWallet.address, getUsername(user));
+                   await createUser(embeddedWallet.address, getUsername(user));
                 }
                 router.push('/home');
             }
@@ -39,10 +48,10 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       config={{
-        loginMethods: ['email'],
+        loginMethods: ['email', 'wallet', 'google', 'twitter', 'github', 'discord'],
         appearance: {
           theme: 'light',
-          accentColor: '#0085FF',
+          accentColor: '#00BFFF',
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
