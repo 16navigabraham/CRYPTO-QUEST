@@ -33,7 +33,6 @@ async function uploadToPinata(file: File) {
         }
 
         const data = await response.json();
-        // Use the dedicated gateway domain provided by the user
         const dedicatedGateway = 'sapphire-careful-peacock-258.mypinata.cloud';
         return `https://${dedicatedGateway}/ipfs/${data.IpfsHash}`;
     } catch (error) {
