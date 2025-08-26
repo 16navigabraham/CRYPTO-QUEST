@@ -162,7 +162,7 @@ export default function LeaderboardPage() {
                   <div className="flex flex-col items-center gap-2">
                     <div className="mb-2">{getRankIcon(player.rank)}</div>
                      <Avatar className="h-20 w-20 border-2 border-primary">
-                      <AvatarImage src={player.avatar || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                      <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
                       <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <p className="text-xl font-bold">{player.name}</p>
@@ -188,7 +188,7 @@ export default function LeaderboardPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                          <Avatar className="h-10 w-10">
-                           <AvatarImage src={player.avatar || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                           <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
                            <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <span>{player.name}</span>

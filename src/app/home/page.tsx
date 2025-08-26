@@ -144,7 +144,7 @@ const WelcomeHeader = () => {
     return (
         <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={profile.profilePicture || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                <AvatarImage src={profile.profilePicture || ''} data-ai-hint="avatar" />
                 <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
