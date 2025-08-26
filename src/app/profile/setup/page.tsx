@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, User as UserIcon, Upload } from 'lucide-react';
+import { Loader2, User as UserIcon, Upload, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getUserProfile, updateUser } from '@/app/actions';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,7 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be 20 characters or less'),
-  profilePicture: z.any().optional(),
+  // We accept a File for uploads, null for removal, or undefined for no change.
+  profilePicture: z.custom<File | null | undefined>().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -41,7 +42,7 @@ export default function ProfileSetupPage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       username: '',
-      profilePicture: null,
+      profilePicture: undefined, // Default to no change
     },
   });
 
@@ -92,6 +93,11 @@ export default function ProfileSetupPage() {
     }
   };
 
+  const handleImageRemove = () => {
+    form.setValue('profilePicture', null); // Set to null to indicate removal
+    setImagePreview(null);
+  }
+
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user?.wallet?.address) {
       toast({ variant: 'destructive', title: 'Error', description: 'Wallet not connected.' });
@@ -99,6 +105,7 @@ export default function ProfileSetupPage() {
     }
     setIsSubmitting(true);
     try {
+      // The `values.profilePicture` will be a File, null, or undefined here.
       await updateUser(user.wallet.address, values.username, values.profilePicture);
       toast({ title: 'Success', description: 'Your profile has been updated.' });
       router.push('/home');
@@ -163,18 +170,26 @@ export default function ProfileSetupPage() {
                     <FormLabel>Profile Picture</FormLabel>
                     <div className="flex items-center gap-4">
                         <Avatar className="h-20 w-20 border-2 border-primary">
-                            <AvatarImage src={imagePreview || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                            <AvatarImage src={imagePreview || ''} data-ai-hint="avatar" />
                             <AvatarFallback>{form.watch('username')?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <FormControl>
-                            <Button asChild variant="outline">
-                                <label>
-                                    <Upload className="mr-2 h-4 w-4" />
-                                    Upload Image
-                                    <input type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={handleImageChange} />
-                                </label>
-                            </Button>
-                        </FormControl>
+                        <div className="flex flex-col gap-2">
+                            <FormControl>
+                                <Button asChild variant="outline">
+                                    <label>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Upload Image
+                                        <input type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={handleImageChange} />
+                                    </label>
+                                </Button>
+                            </FormControl>
+                            {imagePreview && (
+                                <Button onClick={handleImageRemove} variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4"/>
+                                    Remove
+                                </Button>
+                            )}
+                        </div>
                     </div>
                     <FormMessage />
                   </FormItem>

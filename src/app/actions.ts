@@ -72,13 +72,8 @@ export async function createUser(walletAddress: string, username: string) {
   }
 }
 
-export async function updateUser(walletAddress: string, username: string, profilePictureFile?: File) {
+export async function updateUser(walletAddress: string, username: string, profilePictureFile?: File | null) {
     try {
-      let profilePictureUrl: string | null = null;
-      if (profilePictureFile) {
-        profilePictureUrl = await uploadToPinata(profilePictureFile);
-      }
-
       const requestBody: {
         walletAddress: string;
         username: string;
@@ -88,9 +83,15 @@ export async function updateUser(walletAddress: string, username: string, profil
         username,
       };
 
-      if (profilePictureUrl) {
-        requestBody.profilePicture = profilePictureUrl;
+      if (profilePictureFile) {
+        // A file is being uploaded
+        requestBody.profilePicture = await uploadToPinata(profilePictureFile);
+      } else if (profilePictureFile === null) {
+        // The picture is being removed
+        requestBody.profilePicture = null;
       }
+      // If profilePictureFile is undefined, the profilePicture field is not sent,
+      // and the backend will not update it.
 
       const response = await fetch(`${BACKEND_URL}/api/users`, {
         method: 'POST',
