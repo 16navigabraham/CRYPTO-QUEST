@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'gateway.pinata.cloud',
+        hostname: 'sapphire-careful-peacock-258.mypinata.cloud',
         port: '',
         pathname: '/**',
       },
@@ -34,3 +34,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+    

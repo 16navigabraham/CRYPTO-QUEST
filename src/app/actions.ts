@@ -33,7 +33,9 @@ async function uploadToPinata(file: File) {
         }
 
         const data = await response.json();
-        return `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
+        // Use the dedicated gateway domain provided by the user
+        const dedicatedGateway = 'sapphire-careful-peacock-258.mypinata.cloud';
+        return `https://${dedicatedGateway}/ipfs/${data.IpfsHash}`;
     } catch (error) {
         console.error('Error uploading to Pinata:', error);
         throw new Error('Failed to upload image to IPFS.');
@@ -334,3 +336,5 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
         };
     }
 }
+
+    
