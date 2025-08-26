@@ -10,8 +10,38 @@ import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 
 const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
+async function uploadToPinata(file: File) {
+    if (!process.env.PINATA_JWT_KEY) {
+        throw new Error('Pinata API key is not configured.');
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.PINATA_JWT_KEY}`,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Pinata upload failed: ${errorData.error?.reason || response.statusText}`);
+        }
+
+        const data = await response.json();
+        return `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
+    } catch (error) {
+        console.error('Error uploading to Pinata:', error);
+        throw new Error('Failed to upload image to IPFS.');
+    }
+}
+
+
 // --- User Management ---
-export async function createUser(walletAddress: string, username: string, profilePicture?: string) {
+export async function createUser(walletAddress: string, username: string) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/users`, {
       method: 'POST',
@@ -19,7 +49,7 @@ export async function createUser(walletAddress: string, username: string, profil
       body: JSON.stringify({
         walletAddress,
         username,
-        profilePicture: profilePicture || null,
+        profilePicture: null,
       }),
     });
     
@@ -40,15 +70,20 @@ export async function createUser(walletAddress: string, username: string, profil
   }
 }
 
-export async function updateUser(walletAddress: string, username: string, profilePicture?: string) {
+export async function updateUser(walletAddress: string, username: string, profilePictureFile?: File) {
     try {
+      let profilePictureUrl = null;
+      if (profilePictureFile) {
+        profilePictureUrl = await uploadToPinata(profilePictureFile);
+      }
+
       const response = await fetch(`${BACKEND_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           walletAddress,
           username,
-          profilePicture: profilePicture || null,
+          profilePicture: profilePictureUrl
         }),
       });
       if (!response.ok) {
@@ -96,20 +131,15 @@ export async function submitScore(walletAddress: string, quizId: string, score: 
     
     if (!response.ok) {
       if (response.status === 409) {
-          // This is not a critical error for the user, it just means they already did the quiz.
           console.log("Score submission ignored: Quiz already completed.");
           return { ...data, isDuplicate: true };
       }
-      // The backend provides a 'message' field on error, which we can pass to the client.
       throw new Error(data.message || `An unknown error occurred. Status: ${response.status}`);
     }
 
-    // Return the successful response data
     return data;
   } catch (error) {
     console.error('Error submitting score:', error);
-    // Re-throw the error so the client-side component can catch it and display a toast.
-    // The error will now have a user-friendly message from the backend or the one from above.
     if (error instanceof Error && error.message.includes('already completed')) {
       return { isDuplicate: true };
     }
@@ -126,8 +156,7 @@ export async function getLeaderboard() {
             throw new Error('Failed to fetch leaderboard');
         }
         const leaderboardData = await response.json();
-        // The actual leaderboard array is nested in data.leaderboard
-        return leaderboardData.data.leaderboard;
+        return leaderboardData.leaderboard;
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         return [];

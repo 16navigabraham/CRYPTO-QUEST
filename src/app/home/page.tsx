@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getContractRewardPool } from '../actions';
+import { getContractRewardPool, getUserProfile } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -99,6 +100,60 @@ const RewardPool = () => {
     );
 };
 
+type UserProfile = {
+  username: string;
+  profilePicture: string | null;
+}
+
+const WelcomeHeader = () => {
+    const { user } = usePrivy();
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (user?.wallet?.address) {
+                try {
+                    const userProfile = await getUserProfile(user.wallet.address);
+                    if (userProfile) {
+                        setProfile({
+                            username: userProfile.data.username,
+                            profilePicture: userProfile.data.profilePicture
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch user profile", error);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setLoading(false);
+            }
+        }
+        fetchProfile();
+    }, [user]);
+    
+    if (loading) {
+        return <Skeleton className="h-10 w-48" />;
+    }
+
+    if (!profile) {
+        return null;
+    }
+
+    return (
+        <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12 border-2 border-primary">
+                <AvatarImage src={profile.profilePicture || `https://placehold.co/100x100.png`} data-ai-hint="avatar" />
+                <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+                <h2 className="text-2xl font-bold">Welcome back, {profile.username}!</h2>
+                <p className="text-muted-foreground">Ready for your next challenge?</p>
+            </div>
+        </div>
+    )
+}
 
 export default function HomePage() {
   const { ready, authenticated, logout } = usePrivy();
@@ -120,31 +175,35 @@ export default function HomePage() {
   }
   
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
-      <div className="absolute top-4 right-4 flex gap-2">
-         <Button onClick={() => router.push('/profile/setup')} variant="outline">
-            <UserIcon className="mr-2 h-4 w-4" /> Profile
-        </Button>
-         <Button onClick={() => router.push('/wallet')} variant="outline">
-            <Wallet className="mr-2 h-4 w-4" /> Wallet
-        </Button>
-        <Button onClick={() => router.push('/leaderboard')} variant="outline">
-            <BarChart3 className="mr-2 h-4 w-4" /> Leaderboard
-        </Button>
-        <Button onClick={logout} variant="outline">
-          <LogOut className="mr-2 h-4 w-4" /> Logout
-        </Button>
-      </div>
+    <main className="flex min-h-screen flex-col items-center justify-start bg-background p-4 sm:p-8">
       <div className="w-full max-w-4xl space-y-8">
-        <header className="text-center space-y-3">
-          <Logo />
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Test your crypto development knowledge across various topics and difficulty levels. Choose your challenge below to begin your quest!
-          </p>
+        <header className="flex justify-between items-center w-full">
+          <WelcomeHeader />
+           <div className="flex gap-2">
+             <Button onClick={() => router.push('/profile/setup')} variant="outline">
+                <UserIcon className="mr-2 h-4 w-4" /> Profile
+            </Button>
+             <Button onClick={() => router.push('/wallet')} variant="outline">
+                <Wallet className="mr-2 h-4 w-4" /> Wallet
+            </Button>
+            <Button onClick={() => router.push('/leaderboard')} variant="outline">
+                <BarChart3 className="mr-2 h-4 w-4" /> Leaderboard
+            </Button>
+            <Button onClick={logout} variant="outline">
+              <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
+          </div>
         </header>
 
         <RewardPool />
 
+        <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight">Choose Your Challenge</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2">
+                Test your crypto development knowledge across various topics and difficulty levels.
+            </p>
+        </div>
+        
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {difficultyLevels.map((level) => (
             <Link 
