@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb, Timer, Zap } from 'lucide-react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { type Hex, encodeFunctionData, keccak256, encodePacked } from 'viem';
@@ -25,7 +25,7 @@ type Question = {
   correctAnswerIndex: number;
 };
 
-type QuizState = 'loading' | 'active' | 'completed' | 'error';
+type QuizState = 'selection' | 'loading' | 'active' | 'completed' | 'error';
 type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
 type TokenInfo = {
     symbol: string | null;
@@ -40,7 +40,7 @@ const difficultyMap: { [key: string]: { id: number; questionCount: number; passP
 };
 
 export default function QuizPage({ params }: { params: { difficulty: string } }) {
-  const [quizState, setQuizState] = useState<QuizState>('loading');
+  const [quizState, setQuizState] = useState<QuizState>('selection');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -54,9 +54,10 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [tokenInfo, setTokenInfo] = useState<TokenInfo>({ symbol: null });
   const [hint, setHint] = useState<{ forQuestion: number; text: string } | null>(null);
   const [isHintLoading, setIsHintLoading] = useState(false);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(0);
   
   const { toast } = useToast();
-  const { ready, authenticated } = usePrivy();
+  const { ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const { sendTransaction, isSending } = useSendTransaction();
   const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
@@ -82,13 +83,14 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     }
   }, []);
 
-  const loadQuestions = useCallback(async () => {
+  const loadQuestions = useCallback(async (questionCount: number) => {
     if (!difficultyConfig) {
         setErrorMessage('Invalid difficulty level.');
         setQuizState('error');
         return;
     }
     setQuizState('loading');
+    setNumberOfQuestions(questionCount);
     setIsAnswered(false);
     setSelectedAnswerIndex(null);
     setCurrentQuestionIndex(0);
@@ -99,7 +101,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setIsHintLoading(false);
     setQuizId(crypto.randomUUID());
     try {
-      const fetchedQuestions = await getQuizQuestions(params.difficulty, difficultyConfig.questionCount);
+      const fetchedQuestions = await getQuizQuestions(params.difficulty, questionCount);
       setQuestions(fetchedQuestions);
       setQuizState('active');
       if (fetchedQuestions.length > 0) {
@@ -112,13 +114,10 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   }, [params.difficulty, difficultyConfig, handleTextToSpeech]);
 
   useEffect(() => {
-    if(ready && authenticated) {
-        loadQuestions();
-        if (embeddedWallet?.address) {
-            getTokenInfo(embeddedWallet.address as `0x${string}`).then(info => setTokenInfo({ symbol: info.symbol }));
-        }
+    if(ready && authenticated && embeddedWallet?.address) {
+        getTokenInfo(embeddedWallet.address as `0x${string}`).then(info => setTokenInfo({ symbol: info.symbol }));
     }
-  }, [loadQuestions, ready, authenticated, embeddedWallet?.address]);
+  }, [ready, authenticated, embeddedWallet?.address]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (isAnswered) return;
@@ -136,31 +135,31 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   const handleQuizCompletion = useCallback(async () => {
     setQuizState('completed');
-    if (!embeddedWallet?.address || !quizId) return;
+    if (!user?.wallet?.address || !quizId) return;
 
     try {
-        const result = await submitScore(embeddedWallet.address, quizId, score, params.difficulty);
-        if (result.isDuplicate) {
-             toast({
-                title: "Score Not Saved",
-                description: "You have already completed this quiz.",
-                variant: 'default'
-            });
-        } else {
-             toast({
-                title: "Score Saved!",
-                description: "Your score has been saved to the leaderboard.",
-            });
-        }
-    } catch (error) {
-        console.error("Failed to submit score:", error);
+      const result = await submitScore(user.wallet.address, quizId, score, params.difficulty);
+      if (result.isDuplicate) {
         toast({
-            variant: 'destructive',
-            title: "Score Sync Failed",
-            description: error instanceof Error ? error.message : "Could not save your score to the server.",
+          title: "Score Not Saved",
+          description: "You have already completed this quiz.",
+          variant: 'default'
         });
+      } else {
+        toast({
+          title: "Score Saved!",
+          description: "Your score has been saved to the leaderboard.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to submit score:", error);
+      toast({
+        variant: 'destructive',
+        title: "Score Sync Failed",
+        description: error instanceof Error ? error.message : "Could not save your score to the server.",
+      });
     }
-  }, [embeddedWallet?.address, quizId, params.difficulty, score, toast]);
+  }, [user?.wallet, quizId, params.difficulty, score, toast]);
 
 
   const handleNextQuestion = () => {
@@ -265,8 +264,67 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   const currentQuestion = questions[currentQuestionIndex];
   const progressValue = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
+  
+  if (!ready || !difficultyConfig) {
+    return (
+       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+          <Loader2 className="h-16 w-16 animate-spin text-primary" />
+       </div>
+    );
+  }
 
-  if (quizState === 'loading' || !ready || !difficultyConfig) {
+  if (quizState === 'selection') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-lg text-center">
+          <CardHeader>
+            <CardTitle className="text-3xl">Choose Your Quiz Mode</CardTitle>
+            <CardDescription>Select the length of your {difficulty} quiz.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <Card 
+              className="group cursor-pointer transform transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20"
+              onClick={() => loadQuestions(10)}
+            >
+              <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
+                <div className="bg-primary/10 p-3 rounded-full">
+                  <Zap className="h-10 w-10 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <CardTitle className="text-xl">Quick Quiz</CardTitle>
+                  <CardDescription>10 questions</CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+            <Card 
+              className="group cursor-pointer transform transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20"
+              onClick={() => loadQuestions(difficultyConfig.questionCount)}
+            >
+              <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
+                <div className="bg-primary/10 p-3 rounded-full">
+                  <Timer className="h-10 w-10 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <CardTitle className="text-xl">Full Quiz</CardTitle>
+                  <CardDescription>{difficultyConfig.questionCount} questions</CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="link" className="w-full text-muted-foreground">
+                <Link href="/home">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+                </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  if (quizState === 'loading') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Card className="w-full max-w-2xl animate-pulse">
@@ -304,7 +362,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
                 <CardDescription>{errorMessage}</CardDescription>
             </CardHeader>
             <CardFooter className="flex gap-2">
-                <Button onClick={loadQuestions}>
+                <Button onClick={() => setQuizState('selection')}>
                 <RefreshCw className="mr-2 h-4 w-4" /> Try Again
                 </Button>
                 <Button asChild variant="outline">
@@ -378,7 +436,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             )}
           </CardContent>
           <CardFooter className="flex justify-center gap-4">
-            <Button onClick={loadQuestions}>
+            <Button onClick={() => setQuizState('selection')}>
               <RefreshCw className="mr-2 h-4 w-4" /> Play Again
             </Button>
             <Button asChild variant="outline">
@@ -474,3 +532,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    
