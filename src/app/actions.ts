@@ -11,7 +11,7 @@ import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
 // --- User Management ---
-export async function createUser(walletAddress: string, username: string) {
+export async function createUser(walletAddress: string, username: string, profilePicture?: string) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/users`, {
       method: 'POST',
@@ -19,30 +19,66 @@ export async function createUser(walletAddress: string, username: string) {
       body: JSON.stringify({
         walletAddress,
         username,
+        profilePicture: profilePicture || null,
       }),
     });
     
     // A 409 Conflict means the user already exists, which is not an error for this flow.
     if (!response.ok && response.status !== 409) {
         const errorData = await response.json();
-        console.error('Failed to create user:', errorData.message);
-        // We don't throw an error to the client here as it's not a critical UI-blocking event.
+        throw new Error(errorData.message || 'Failed to create user');
     }
     
     const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error creating user:', error);
-    // Don't throw error to the client for this
+    if (error instanceof Error && error.message.includes('already exists')) {
+        return { isDuplicate: true };
+    }
+    throw error;
   }
+}
+
+export async function updateUser(walletAddress: string, username: string, profilePicture?: string) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress,
+          username,
+          profilePicture: profilePicture || null,
+        }),
+      });
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to update user profile.');
+      }
+      return await response.json();
+    } catch (error) {
+        console.error('Error updating user:', error);
+        throw error;
+    }
+}
+
+export async function getUserProfile(walletAddress: string) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/users/${walletAddress}`);
+        if (!response.ok) {
+            if (response.status === 404) return null;
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch user profile.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        throw error;
+    }
 }
 
 // --- Score Management ---
 export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string) {
-  if (!BACKEND_URL) {
-    console.error('BACKEND_URL is not set. Cannot submit score.');
-    throw new Error('Server configuration error. Please contact support.');
-  }
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/scores`, {
@@ -73,7 +109,10 @@ export async function submitScore(walletAddress: string, quizId: string, score: 
   } catch (error) {
     console.error('Error submitting score:', error);
     // Re-throw the error so the client-side component can catch it and display a toast.
-    // The error will now have a user-friendly message from the backend or the generic one from above.
+    // The error will now have a user-friendly message from the backend or the one from above.
+    if (error instanceof Error && error.message.includes('already completed')) {
+      return { isDuplicate: true };
+    }
     throw error;
   }
 }
@@ -87,6 +126,7 @@ export async function getLeaderboard() {
             throw new Error('Failed to fetch leaderboard');
         }
         const leaderboardData = await response.json();
+        // The actual leaderboard array is nested in data.leaderboard
         return leaderboardData.data.leaderboard;
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
