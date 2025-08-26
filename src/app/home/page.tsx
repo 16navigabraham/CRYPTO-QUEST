@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { getContractRewardPool, getUserProfile } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -144,7 +145,7 @@ const WelcomeHeader = () => {
     return (
         <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={profile.profilePicture || ''} data-ai-hint="avatar" />
+                <AvatarImage src={profile.profilePicture || ''} fallbackSrc="https://placehold.co/100x100.png" data-ai-hint="avatar" />
                 <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
@@ -179,7 +180,8 @@ export default function HomePage() {
       <div className="w-full max-w-4xl space-y-8">
         <header className="flex justify-between items-center w-full gap-4">
           <WelcomeHeader />
-           <div className="flex gap-2">
+           <div className="flex items-center gap-2">
+             <ThemeSwitcher />
              <Button onClick={() => router.push('/profile/setup')} variant="outline">
                 <UserIcon className="mr-2 h-4 w-4" /> Profile
             </Button>
