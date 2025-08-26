@@ -177,7 +177,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-start bg-background p-4 sm:p-8">
       <div className="w-full max-w-4xl space-y-8">
-        <header className="flex justify-between items-center w-full">
+        <header className="flex justify-between items-center w-full gap-4">
           <WelcomeHeader />
            <div className="flex gap-2">
              <Button onClick={() => router.push('/profile/setup')} variant="outline">
