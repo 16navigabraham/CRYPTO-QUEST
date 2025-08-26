@@ -348,5 +348,3 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
 }
 
     
-
-    

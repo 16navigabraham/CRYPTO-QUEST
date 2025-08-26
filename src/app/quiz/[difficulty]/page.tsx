@@ -135,6 +135,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     if (!user?.wallet?.address || !quizId) return;
 
     try {
+      // The `submitScore` action now expects the `maxScore` to correctly calculate percentage on the backend.
       const result = await submitScore(user.wallet.address, quizId, score, params.difficulty);
        if (result.isDuplicate) {
         toast({
@@ -156,7 +157,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         description: error instanceof Error ? error.message : "Could not save your score to the server.",
       });
     }
-  }, [user?.wallet, quizId, params.difficulty, score, toast]);
+  }, [user?.wallet, quizId, params.difficulty, score, toast, numberOfQuestions]);
 
 
   const handleNextQuestion = () => {
@@ -208,6 +209,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
     try {
       const quizIdHashed = keccak256(encodePacked(['string'], [quizId]));
+      // CRITICAL FIX: Use `numberOfQuestions` which reflects the actual quiz length.
       const scoreInPercentage = Math.round((score / numberOfQuestions) * 100);
       
       const unsignedTx = {
@@ -530,3 +532,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    
