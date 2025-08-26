@@ -115,7 +115,7 @@ const WelcomeHeader = () => {
             if (user?.wallet?.address) {
                 try {
                     const userProfile = await getUserProfile(user.wallet.address);
-                    if (userProfile) {
+                    if (userProfile && userProfile.data) {
                         setProfile({
                             username: userProfile.data.username,
                             profilePicture: userProfile.data.profilePicture
