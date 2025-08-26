@@ -216,7 +216,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(scoreInPercentage), BigInt(numberOfQuestions)]
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(scoreInPercentage), BigInt(1)] // Use 1 as a default multiplier
           }),
       };
 
