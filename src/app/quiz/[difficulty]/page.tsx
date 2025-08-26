@@ -157,7 +157,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         description: error instanceof Error ? error.message : "Could not save your score to the server.",
       });
     }
-  }, [user?.wallet, quizId, params.difficulty, score, toast, numberOfQuestions]);
+  }, [user?.wallet, quizId, params.difficulty, score, toast]);
 
 
   const handleNextQuestion = () => {
@@ -388,7 +388,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             <div className='space-y-2'>
               <p className="text-lg">Your final score is:</p>
               <p className="text-6xl font-bold text-primary">
-                {score} / {questions.length}
+                {score} / {numberOfQuestions}
               </p>
               <p className={cn("text-2xl font-semibold", passed ? "text-green-500" : "text-destructive")}>{percentage}%</p>
               <p className="text-sm text-muted-foreground">{passed ? "Congratulations, you passed!" : `You needed ${difficultyConfig.passPercentage}% to pass.`}</p>
@@ -461,7 +461,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             <Badge variant="secondary">Score: {score}</Badge>
           </div>
           <CardDescription>
-            Question {currentQuestionIndex + 1} of {questions.length}
+            Question {currentQuestionIndex + 1} of {numberOfQuestions}
           </CardDescription>
           <Progress value={progressValue} className="w-full mt-2" />
         </CardHeader>
@@ -532,5 +532,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
