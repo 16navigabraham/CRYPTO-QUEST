@@ -6,7 +6,7 @@ import { textToSpeechFlow, type TextToSpeechOutput } from '@/ai/flows/text-to-sp
 import { explainQuestion, type ExplainQuestionInput, type ExplainQuestionOutput } from '@/ai/flows/explain-question';
 import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
-import { erc20Abi, formatUnits, type Hex } from 'viem';
+import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 
 const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
@@ -86,8 +86,8 @@ export async function getLeaderboard() {
         if (!response.ok) {
             throw new Error('Failed to fetch leaderboard');
         }
-        const data = await response.json();
-        return data.data.leaderboard;
+        const leaderboardData = await response.json();
+        return leaderboardData.data.leaderboard;
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         return [];
@@ -159,7 +159,7 @@ export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
   }
 }
 
-export async function getTokenInfo(userAddress: `0x${string}`) {
+export async function getWalletDetails(userAddress: `0x${string}`) {
     let tokenAddress: `0x${string}`;
     try {
         tokenAddress = await publicClient.readContract({
@@ -173,7 +173,7 @@ export async function getTokenInfo(userAddress: `0x${string}`) {
     }
 
     try {
-        const [balance, symbol, decimals] = await Promise.all([
+        const [rewardTokenBalance, symbol, decimals, ethBalance] = await Promise.all([
             publicClient.readContract({
                 address: tokenAddress,
                 abi: erc20Abi,
@@ -190,22 +190,35 @@ export async function getTokenInfo(userAddress: `0x${string}`) {
                 abi: erc20Abi,
                 functionName: 'decimals',
             }),
+            publicClient.getBalance({ address: userAddress })
         ]);
 
         return {
-            balance: formatUnits(balance, decimals),
-            symbol,
-            decimals,
-            tokenAddress,
+            rewardToken: {
+                balance: formatUnits(rewardTokenBalance, decimals),
+                symbol,
+                decimals,
+                tokenAddress,
+            },
+            eth: {
+                balance: formatEther(ethBalance),
+                symbol: 'ETH',
+            }
         };
     } catch (error) {
         console.error('Error fetching token info:', error);
         // Fallback for UI display if everything fails
         return {
-            balance: '0',
-            symbol: 'CQT',
-            decimals: 18,
-            tokenAddress: tokenAddress,
+             rewardToken: {
+                balance: '0',
+                symbol: 'CQT',
+                decimals: 18,
+                tokenAddress: tokenAddress,
+            },
+            eth: {
+                balance: '0',
+                symbol: 'ETH',
+            }
         };
     }
 }

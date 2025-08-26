@@ -4,12 +4,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { getTokenInfo } from '@/app/actions';
+import { getWalletDetails } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Loader2, Send, Wallet as WalletIcon, Copy, Check, LogOut, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, Send, Wallet as WalletIcon, Copy, Check, LogOut, AlertTriangle, Coins, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
@@ -28,12 +28,54 @@ const sendSchema = z.object({
   }),
 });
 
-type TokenInfo = {
-    balance: string;
-    symbol: string;
-    decimals: number;
-    tokenAddress: `0x${string}`;
+type WalletDetails = {
+    rewardToken: {
+        balance: string;
+        symbol: string;
+        decimals: number;
+        tokenAddress: `0x${string}`;
+    };
+    eth: {
+        balance: string;
+        symbol: string;
+    };
 }
+
+const WalletSkeleton = () => (
+    <div className="w-full max-w-lg">
+        <Button asChild variant="ghost" className="mb-4 invisible">
+            <Link href="/home">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+            </Link>
+        </Button>
+        <Card className="animate-pulse">
+            <CardHeader>
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-4">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                </div>
+                 <Separator />
+                <div className="space-y-4">
+                    <Skeleton className="h-8 w-1/3" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+                 <Separator />
+                 <div className="space-y-4">
+                    <Skeleton className="h-8 w-1/3" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+);
+
 
 export default function WalletPage() {
     const router = useRouter();
@@ -43,7 +85,7 @@ export default function WalletPage() {
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
     const { sendTransaction, isSending } = useSendTransaction();
 
-    const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
+    const [walletDetails, setWalletDetails] = useState<WalletDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [copied, setCopied] = useState(false);
 
@@ -52,18 +94,18 @@ export default function WalletPage() {
         defaultValues: { recipient: '', amount: '' },
     });
 
-    const fetchTokenInfo = useCallback(async () => {
+    const fetchWalletDetails = useCallback(async () => {
         if (embeddedWallet) {
             setIsLoading(true);
             try {
-                const info = await getTokenInfo(embeddedWallet.address as `0x${string}`);
-                setTokenInfo(info);
+                const details = await getWalletDetails(embeddedWallet.address as `0x${string}`);
+                setWalletDetails(details);
             } catch (error) {
-                console.error("Failed to fetch token info:", error);
+                console.error("Failed to fetch wallet details:", error);
                  toast({
                     variant: 'destructive',
                     title: 'Error',
-                    description: 'Could not fetch your token balance.',
+                    description: 'Could not fetch your wallet details.',
                 });
             } finally {
                 setIsLoading(false);
@@ -76,9 +118,9 @@ export default function WalletPage() {
             router.push('/login');
         }
         if (ready && authenticated && embeddedWallet) {
-            fetchTokenInfo();
+            fetchWalletDetails();
         }
-    }, [ready, authenticated, router, embeddedWallet, fetchTokenInfo]);
+    }, [ready, authenticated, router, embeddedWallet, fetchWalletDetails]);
 
     const handleCopy = () => {
         if (embeddedWallet?.address) {
@@ -89,7 +131,7 @@ export default function WalletPage() {
     };
     
     const onSubmit = async (values: z.infer<typeof sendSchema>) => {
-        if (!embeddedWallet || !tokenInfo) {
+        if (!embeddedWallet || !walletDetails) {
              toast({
                 variant: 'destructive',
                 title: 'Error',
@@ -101,10 +143,10 @@ export default function WalletPage() {
         try {
             await embeddedWallet.switchChain(base.id);
 
-            const amountToSend = parseUnits(values.amount, tokenInfo.decimals);
+            const amountToSend = parseUnits(values.amount, walletDetails.rewardToken.decimals);
             
             const unsignedTx = {
-                to: tokenInfo.tokenAddress,
+                to: walletDetails.rewardToken.tokenAddress,
                 chainId: base.id,
                 data: `0xa9059cbb${values.recipient.substring(2).padStart(64, '0')}${amountToSend.toString(16).padStart(64, '0')}` as Hex,
                 value: '0x0'
@@ -123,7 +165,7 @@ export default function WalletPage() {
             });
             form.reset();
             // Refresh balance after a short delay
-            setTimeout(fetchTokenInfo, 5000); 
+            setTimeout(fetchWalletDetails, 5000); 
 
         } catch (error: any) {
              toast({
@@ -137,22 +179,8 @@ export default function WalletPage() {
 
     if (!ready || isLoading) {
         return (
-            <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-                 <Card className="w-full max-w-md animate-pulse">
-                    <CardHeader>
-                        <Skeleton className="h-8 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                    </CardHeader>
-                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                             <Skeleton className="h-16 w-full" />
-                             <Skeleton className="h-6 w-1/4 mx-auto" />
-                        </div>
-                         <Skeleton className="h-10 w-full" />
-                         <Skeleton className="h-10 w-full" />
-                         <Skeleton className="h-10 w-full" />
-                    </CardContent>
-                 </Card>
+            <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
+                <WalletSkeleton />
             </div>
         );
     }
@@ -160,7 +188,7 @@ export default function WalletPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         <Button asChild variant="ghost" className="mb-4">
             <Link href="/home">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -172,20 +200,45 @@ export default function WalletPage() {
             <CardTitle className="flex items-center gap-2">
                 <WalletIcon className="h-6 w-6" /> Your Wallet
             </CardTitle>
-            <CardDescription>View your balance and send tokens.</CardDescription>
+            <CardDescription>View balances and manage your assets on Base.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-                <Card className="bg-muted/50 p-4 text-center">
-                     <CardTitle className="text-4xl font-bold">
-                        {tokenInfo ? `${parseFloat(tokenInfo.balance).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '0.00'}
-                    </CardTitle>
-                    <CardDescription className="font-semibold text-lg">{tokenInfo?.symbol || 'Tokens'}</CardDescription>
-                </Card>
+                
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg flex items-center gap-2"><Coins className="h-5 w-5 text-primary"/> Your Balances</h3>
+                    <Card className="bg-muted/30">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">Reward Token</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">
+                                {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{walletDetails?.rewardToken.symbol || 'Tokens'}</p>
+                        </CardContent>
+                    </Card>
+                     <Card className="bg-muted/30">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">Base ETH</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">
+                                {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
+                            </div>
+                            <p className="text-xs text-muted-foreground">ETH</p>
+                        </CardContent>
+                    </Card>
+                </div>
+                
+                <Separator />
             
-                 <div className="space-y-2">
-                    <p className="text-sm font-medium">Your Wallet Address</p>
+                 <div className="space-y-4">
+                     <h3 className="font-semibold text-lg flex items-center gap-2"><ArrowDownToLine className="h-5 w-5 text-primary"/> Deposit</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Deposit Base ETH or other tokens to this address to pay for transaction fees or interact with other dApps.
+                    </p>
                     <div className="flex items-center gap-2 rounded-md border bg-background p-2">
-                        <p className="text-xs text-muted-foreground break-all flex-grow">
+                        <p className="text-sm text-muted-foreground break-all flex-grow">
                             {embeddedWallet?.address}
                         </p>
                          <Button variant="ghost" size="icon" onClick={handleCopy} className="h-7 w-7">
@@ -194,8 +247,11 @@ export default function WalletPage() {
                     </div>
                  </div>
 
-                <div>
-                     <Alert variant="default" className="mb-4">
+                <Separator />
+
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg flex items-center gap-2"><ArrowUpFromLine className="h-5 w-5 text-primary"/> Withdraw / Send</h3>
+                     <Alert variant="default">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Gas Fees Required</AlertTitle>
                         <AlertDescription>
@@ -222,9 +278,9 @@ export default function WalletPage() {
                                 name="amount"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Amount to Send</FormLabel>
+                                    <FormLabel>Amount of {walletDetails?.rewardToken.symbol || 'Tokens'} to Send</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="0.0" {...field} />
+                                        <Input type="number" step="any" placeholder="0.0" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -239,7 +295,7 @@ export default function WalletPage() {
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                    <h3 className="text-sm font-medium">Wallet Actions</h3>
+                     <h3 className="font-semibold text-lg">Advanced</h3>
                     <Button
                         variant="outline"
                         className="w-full"
