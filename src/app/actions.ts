@@ -156,7 +156,8 @@ export async function getLeaderboard() {
             throw new Error('Failed to fetch leaderboard');
         }
         const leaderboardData = await response.json();
-        return leaderboardData.leaderboard;
+        // Correctly access the nested leaderboard array
+        return leaderboardData?.data?.leaderboard || [];
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         return [];
