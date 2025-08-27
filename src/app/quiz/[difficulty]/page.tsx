@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -278,7 +279,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             <CardTitle className="text-3xl">Choose Your Quiz Mode</CardTitle>
             <CardDescription>Select the length of your {difficulty} quiz.</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Card 
               className="group cursor-pointer transform transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20"
               onClick={() => loadQuestions(10)}
@@ -463,8 +464,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           <Progress value={progressValue} className="w-full mt-2" />
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-lg sm:text-xl font-semibold text-center text-card-foreground flex-grow">{currentQuestion.question}</p>
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-lg sm:text-xl font-semibold text-card-foreground flex-grow py-1">{currentQuestion.question}</p>
             <div className='flex flex-col gap-2'>
               <Button onClick={playAudio} variant="ghost" size="icon" disabled={!audioUrl}>
                 <Volume2 className="h-6 w-6" />
@@ -483,7 +484,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             {currentQuestion.answers.map((answer, index) => {
               const isCorrect = index === currentQuestion.correctAnswerIndex;
               const isSelected = index === selectedAnswerIndex;
@@ -529,3 +530,5 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
+
+    

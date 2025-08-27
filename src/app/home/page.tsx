@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -19,6 +20,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { cn } from '@/lib/utils';
 
 const difficultyLevels = [
   {
@@ -134,12 +136,12 @@ const WelcomeHeader = () => {
     if (loading) {
         return (
              <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                      <div className="flex items-center gap-4">
-                        <Skeleton className="h-16 w-16 rounded-full" />
+                        <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full" />
                         <div className="space-y-2">
-                            <Skeleton className="h-6 w-40" />
-                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-6 w-32 sm:w-40" />
+                            <Skeleton className="h-4 w-24 sm:w-32" />
                         </div>
                     </div>
                 </CardContent>
@@ -153,21 +155,21 @@ const WelcomeHeader = () => {
 
     return (
         <Card className="shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
-            <CardContent className="p-6">
-                <div className="flex justify-between items-start">
+            <CardContent className="p-4 sm:p-6">
+                <div className="flex justify-between items-start gap-4">
                     <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16 border-2 border-primary">
+                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-primary">
                             <AvatarImage src={profile.profilePictureUrl || undefined} />
                             <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <h2 className="text-2xl font-bold">Welcome back, {profile.username}!</h2>
-                            <p className="text-muted-foreground">Ready for your next challenge?</p>
+                            <h2 className="text-xl sm:text-2xl font-bold">Welcome, {profile.username}!</h2>
+                            <p className="text-sm sm:text-base text-muted-foreground">Ready for your next challenge?</p>
                         </div>
                     </div>
-                     <div className="text-right">
-                        <p className="text-sm font-medium text-muted-foreground">Total Score</p>
-                        <p className="text-3xl font-bold text-primary">{profile.totalScore || 0}</p>
+                     <div className="text-right flex-shrink-0">
+                        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total Score</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-primary">{profile.totalScore || 0}</p>
                     </div>
                 </div>
             </CardContent>
@@ -195,26 +197,30 @@ export default function HomePage() {
   }
   
   return (
-    <main className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
+    <main className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-5xl space-y-8">
-        <header className="flex justify-between items-center w-full gap-4">
+        <header className="flex justify-between items-center w-full gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-                <Star className="h-8 w-8 text-primary" />
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">CryptoQuest</h1>
+                <Star className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">CryptoQuest</h1>
             </div>
-           <div className="flex items-center gap-2">
+           <div className="flex items-center gap-1 sm:gap-2">
              <ThemeSwitcher />
-             <Button onClick={() => router.push('/profile/setup')} variant="outline" size="sm">
-                <UserIcon /> Profile
+             <Button onClick={() => router.push('/profile/setup')} variant="outline" size="sm" className="p-2 sm:px-3">
+                <UserIcon className="h-4 w-4" /> 
+                <span className="hidden sm:inline ml-2">Profile</span>
             </Button>
-             <Button onClick={() => router.push('/wallet')} variant="outline" size="sm">
-                <Wallet /> Wallet
+             <Button onClick={() => router.push('/wallet')} variant="outline" size="sm" className="p-2 sm:px-3">
+                <Wallet className="h-4 w-4" /> 
+                <span className="hidden sm:inline ml-2">Wallet</span>
             </Button>
-            <Button onClick={() => router.push('/leaderboard')} variant="outline" size="sm">
-                <BarChart3 /> Leaderboard
+            <Button onClick={() => router.push('/leaderboard')} variant="outline" size="sm" className="p-2 sm:px-3">
+                <BarChart3 className="h-4 w-4" /> 
+                <span className="hidden sm:inline ml-2">Board</span>
             </Button>
-            <Button onClick={logout} variant="outline" size="sm">
-              <LogOut /> Logout
+            <Button onClick={logout} variant="outline" size="sm" className="p-2 sm:px-3">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Logout</span>
             </Button>
           </div>
         </header>
@@ -224,8 +230,8 @@ export default function HomePage() {
         <RewardPool />
 
         <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Choose Your Challenge</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Choose Your Challenge</h2>
+            <p className="text-muted-foreground text-md sm:text-lg max-w-2xl mx-auto mt-2">
                 Test your crypto development knowledge across various topics and difficulty levels.
             </p>
         </div>
@@ -233,13 +239,13 @@ export default function HomePage() {
         <Carousel
             opts={{
                 align: "start",
-                loop: true,
+                loop: false,
             }}
             className="w-full"
             >
-            <CarouselContent>
+            <CarouselContent className="-ml-2 md:-ml-4">
                 {difficultyLevels.map((level, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={index} className="basis-4/5 sm:basis-1/2 lg:basis-1/3 pl-2 md:pl-4">
                     <div className="p-1">
                         <Link 
                             href={level.href} 
@@ -261,14 +267,17 @@ export default function HomePage() {
                 </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
+            <CarouselPrevious className="hidden md:flex" />
+            <CarouselNext className="hidden md:flex" />
         </Carousel>
         
-        <footer className="text-center text-sm text-muted-foreground">
+        <footer className="text-center text-sm text-muted-foreground pt-4">
           <p>Sharpen your skills. Earn rewards. Become a legend.</p>
         </footer>
       </div>
     </main>
   );
 }
+
+
+    

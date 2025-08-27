@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowLeft, Crown, Medal, Trophy } from 'lucide-react';
@@ -155,7 +156,7 @@ export default function LeaderboardPage() {
           </CardHeader>
           <CardContent>
             {/* Top 3 Players */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               {topThree.map((player) => (
                 <Card key={player.rank} className={cn("text-center p-4 transform transition-transform hover:-translate-y-1", getRankColor(player.rank))}>
                   <div className="flex flex-col items-center gap-2">
@@ -172,35 +173,39 @@ export default function LeaderboardPage() {
             </div>
 
             {/* Rest of the players table */}
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Rank</TableHead>
-                  <TableHead>Player</TableHead>
-                  <TableHead className="text-right">Score</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {restOfPlayers.map(player => (
-                  <TableRow key={player.rank}>
-                    <TableCell className="font-bold">{player.rank}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                         <Avatar className="h-10 w-10">
-                           <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
-                           <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span>{player.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">{player.score} Points</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead className="w-[80px] pr-0">Rank</TableHead>
+                    <TableHead>Player</TableHead>
+                    <TableHead className="text-right">Score</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {restOfPlayers.map(player => (
+                    <TableRow key={player.rank}>
+                        <TableCell className="font-bold">{player.rank}</TableCell>
+                        <TableCell>
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                            <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
+                            <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="truncate">{player.name}</span>
+                        </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">{player.score} Points</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
+    

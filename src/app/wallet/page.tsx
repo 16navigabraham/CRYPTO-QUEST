@@ -211,7 +211,7 @@ export default function WalletPage() {
                             <CardTitle className="text-sm font-medium">Reward Token</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">
+                            <div className="text-2xl sm:text-3xl font-bold">
                                 {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
                             </div>
                             <p className="text-xs text-muted-foreground">{walletDetails?.rewardToken.symbol || 'Tokens'}</p>
@@ -222,7 +222,7 @@ export default function WalletPage() {
                             <CardTitle className="text-sm font-medium">Base ETH</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">
+                            <div className="text-2xl sm:text-3xl font-bold">
                                 {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
                             </div>
                             <p className="text-xs text-muted-foreground">ETH</p>
@@ -314,3 +314,5 @@ export default function WalletPage() {
     </div>
   );
 }
+
+    
