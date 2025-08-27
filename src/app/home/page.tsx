@@ -12,13 +12,13 @@ import { getContractRewardPool, getUserProfile } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
-
-const Logo = () => (
-  <div className="flex items-center justify-center gap-2">
-    <Star className="h-8 w-8 text-primary" />
-    <h1 className="text-3xl font-bold tracking-tight text-foreground">CryptoQuest</h1>
-  </div>
-);
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 const difficultyLevels = [
   {
@@ -103,6 +103,7 @@ const RewardPool = () => {
 type UserProfile = {
   username: string;
   profilePictureUrl: string | null;
+  totalScore: number;
 }
 
 const WelcomeHeader = () => {
@@ -116,10 +117,7 @@ const WelcomeHeader = () => {
                 try {
                     const userProfile = await getUserProfile(user.wallet.address);
                     if (userProfile && userProfile.data) {
-                        setProfile({
-                            username: userProfile.data.username,
-                            profilePictureUrl: userProfile.data.profilePictureUrl
-                        });
+                        setProfile(userProfile.data);
                     }
                 } catch (error) {
                     console.error("Failed to fetch user profile", error);
@@ -132,9 +130,21 @@ const WelcomeHeader = () => {
         }
         fetchProfile();
     }, [user]);
-    
+
     if (loading) {
-        return <Skeleton className="h-10 w-48" />;
+        return (
+             <Card>
+                <CardContent className="p-6">
+                     <div className="flex items-center gap-4">
+                        <Skeleton className="h-16 w-16 rounded-full" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-40" />
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )
     }
 
     if (!profile) {
@@ -142,16 +152,26 @@ const WelcomeHeader = () => {
     }
 
     return (
-        <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={profile.profilePictureUrl || undefined} />
-                <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div>
-                <h2 className="text-2xl font-bold">Welcome back, {profile.username}!</h2>
-                <p className="text-muted-foreground">Ready for your next challenge?</p>
-            </div>
-        </div>
+        <Card className="shadow-lg hover:shadow-primary/20 transition-shadow duration-300">
+            <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 border-2 border-primary">
+                            <AvatarImage src={profile.profilePictureUrl || undefined} />
+                            <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <h2 className="text-2xl font-bold">Welcome back, {profile.username}!</h2>
+                            <p className="text-muted-foreground">Ready for your next challenge?</p>
+                        </div>
+                    </div>
+                     <div className="text-right">
+                        <p className="text-sm font-medium text-muted-foreground">Total Score</p>
+                        <p className="text-3xl font-bold text-primary">{profile.totalScore || 0}</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     )
 }
 
@@ -175,27 +195,32 @@ export default function HomePage() {
   }
   
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start bg-background p-4 sm:p-8">
-      <div className="w-full max-w-4xl space-y-8">
+    <main className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
+      <div className="w-full max-w-5xl space-y-8">
         <header className="flex justify-between items-center w-full gap-4">
-          <WelcomeHeader />
+            <div className="flex items-center gap-2">
+                <Star className="h-8 w-8 text-primary" />
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">CryptoQuest</h1>
+            </div>
            <div className="flex items-center gap-2">
              <ThemeSwitcher />
-             <Button onClick={() => router.push('/profile/setup')} variant="outline">
-                <UserIcon className="mr-2 h-4 w-4" /> Profile
+             <Button onClick={() => router.push('/profile/setup')} variant="outline" size="sm">
+                <UserIcon /> Profile
             </Button>
-             <Button onClick={() => router.push('/wallet')} variant="outline">
-                <Wallet className="mr-2 h-4 w-4" /> Wallet
+             <Button onClick={() => router.push('/wallet')} variant="outline" size="sm">
+                <Wallet /> Wallet
             </Button>
-            <Button onClick={() => router.push('/leaderboard')} variant="outline">
-                <BarChart3 className="mr-2 h-4 w-4" /> Leaderboard
+            <Button onClick={() => router.push('/leaderboard')} variant="outline" size="sm">
+                <BarChart3 /> Leaderboard
             </Button>
-            <Button onClick={logout} variant="outline">
-              <LogOut className="mr-2 h-4 w-4" /> Logout
+            <Button onClick={logout} variant="outline" size="sm">
+              <LogOut /> Logout
             </Button>
           </div>
         </header>
 
+        <WelcomeHeader />
+        
         <RewardPool />
 
         <div className="text-center">
@@ -205,27 +230,41 @@ export default function HomePage() {
             </p>
         </div>
         
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {difficultyLevels.map((level) => (
-            <Link 
-              href={level.href} 
-              key={level.name} 
-              className="group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        <Carousel
+            opts={{
+                align: "start",
+                loop: true,
+            }}
+            className="w-full"
             >
-              <Card className="h-full transform transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/20 group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:shadow-primary/20">
-                <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
-                  <div className="bg-primary/10 p-3 rounded-full">
-                    <level.icon className="h-10 w-10 text-primary" />
-                  </div>
-                  <div className="space-y-1">
-                    <CardTitle className="text-xl">{level.name}</CardTitle>
-                    <CardDescription>{level.description}</CardDescription>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
-        </div>
+            <CarouselContent>
+                {difficultyLevels.map((level, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                        <Link 
+                            href={level.href} 
+                            className="group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background block"
+                        >
+                            <Card className="h-full transform transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/20 group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:shadow-primary/20">
+                                <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
+                                <div className="bg-primary/10 p-3 rounded-full">
+                                    <level.icon className="h-10 w-10 text-primary" />
+                                </div>
+                                <div className="space-y-1">
+                                    <CardTitle className="text-xl">{level.name}</CardTitle>
+                                    <CardDescription>{level.description}</CardDescription>
+                                </div>
+                                </CardHeader>
+                            </Card>
+                        </Link>
+                    </div>
+                </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+        
         <footer className="text-center text-sm text-muted-foreground">
           <p>Sharpen your skills. Earn rewards. Become a legend.</p>
         </footer>
