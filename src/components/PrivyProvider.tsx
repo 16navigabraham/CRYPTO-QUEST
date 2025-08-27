@@ -9,7 +9,7 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
       config={{
-        loginMethods: ['email', 'wallet', 'google', 'twitter', 'github', 'discord'],
+        loginMethods: ['email'],
         appearance: {
           theme: 'light',
           accentColor: '#00BFFF',
