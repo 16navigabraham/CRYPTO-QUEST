@@ -1,3 +1,4 @@
+
 // src/app/actions.ts
 'use server';
 
@@ -8,7 +9,7 @@ import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
 
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
