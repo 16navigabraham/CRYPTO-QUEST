@@ -1,3 +1,4 @@
+// src/app/actions.ts
 'use server';
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
@@ -9,7 +10,33 @@ import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export async function uploadToPinata(file: File) {
+async function apiRequest(endpoint: string, options: RequestInit = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const config: RequestInit = {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    };
+
+    try {
+        const response = await fetch(url, config);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || `API request failed with status ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error(`API Error at ${endpoint}:`, error);
+        throw error;
+    }
+}
+
+
+export async function uploadToPinata(file: File): Promise<string> {
     const pinataJwtKey = process.env.PINATA_JWT_KEY;
     if (!pinataJwtKey) {
         throw new Error('Pinata API key is not configured.');
@@ -41,30 +68,26 @@ export async function uploadToPinata(file: File) {
 }
 
 
-// --- User Management ---
-export async function createUser(walletAddress: string, username: string) {
+export async function createUser(walletAddress: string, username: string, profilePictureUrl: string | null) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/users`, {
+    const response = await apiRequest('/api/users', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         walletAddress,
         username,
-        profilePictureUrl: null,
+        profilePictureUrl,
       }),
     });
     
     // A 409 Conflict means the user already exists, which is not an error for this flow.
-    if (!response.ok && response.status !== 409) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create user');
+    if (response.status === 409) {
+        return { isDuplicate: true };
     }
-    
-    const data = await response.json();
-    return data;
+
+    return response;
   } catch (error) {
     console.error('Error creating user:', error);
-    if (error instanceof Error && error.message.includes('already exists')) {
+     if (error instanceof Error && error.message.includes('already exists')) {
         return { isDuplicate: true };
     }
     throw error;
@@ -73,21 +96,15 @@ export async function createUser(walletAddress: string, username: string) {
 
 export async function updateUser(walletAddress: string, username: string, profilePictureUrl: string | null) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`, {
+      const response = await apiRequest('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           walletAddress,
           username,
           profilePictureUrl,
         }),
       });
-
-      if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to update user profile.');
-      }
-      return await response.json();
+      return response;
     } catch (error) {
         console.error('Error updating user:', error);
         throw error;
@@ -95,26 +112,23 @@ export async function updateUser(walletAddress: string, username: string, profil
 }
 
 export async function getUserProfile(walletAddress: string) {
+    if (!walletAddress) return null;
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/${walletAddress}`);
-        if (!response.ok) {
-            if (response.status === 404) return null;
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to fetch user profile.');
-        }
-        return await response.json();
+        const response = await apiRequest(`/api/users/${walletAddress}`);
+        return response;
     } catch (error) {
         console.error('Error fetching user profile:', error);
+        if (error instanceof Error && error.message.includes('User not found')) {
+            return null;
+        }
         throw error;
     }
 }
 
-// --- Score Management ---
 export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string, maxScore: number) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/scores`, {
+    const response = await apiRequest('/api/scores', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         walletAddress, 
         quizId, 
@@ -123,37 +137,21 @@ export async function submitScore(walletAddress: string, quizId: string, score: 
         maxScore,
       }),
     });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      if (response.status === 409) {
-          console.log("Score submission ignored: Quiz already completed.");
-          return { ...data, isDuplicate: true };
-      }
-      throw new Error(data.message || `An unknown error occurred. Status: ${response.status}`);
-    }
-
-    return data;
+    return response;
   } catch (error) {
     console.error('Error submitting score:', error);
     if (error instanceof Error && error.message.includes('already completed')) {
-      return { isDuplicate: true };
+      return { data: { isDuplicate: true }, message: 'Score already submitted' };
     }
     throw error;
   }
 }
 
 
-// --- Leaderboard ---
 export async function getLeaderboard() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch leaderboard');
-        }
-        const leaderboardData = await response.json();
-        return leaderboardData?.data?.leaderboard || [];
+        const response = await apiRequest('/api/leaderboard');
+        return response?.data?.leaderboard || [];
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         return [];
@@ -235,7 +233,6 @@ export async function getWalletDetails(userAddress: `0x${string}`) {
         });
     } catch (error) {
         console.error('Could not fetch reward token address from contract, using fallback:', error);
-        // Fallback address just in case
         tokenAddress = '0xf73978b3a7d1d4974abae11f696c1b4408c027a0';
     }
 
@@ -274,7 +271,6 @@ export async function getWalletDetails(userAddress: `0x${string}`) {
         };
     } catch (error) {
         console.error('Error fetching token info:', error);
-        // Fallback for UI display if everything fails
         return {
              rewardToken: {
                 balance: '0',
