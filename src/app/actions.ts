@@ -86,11 +86,11 @@ export async function updateUser(walletAddress: string, username: string, profil
         // A file is being uploaded
         requestBody.profilePictureUrl = await uploadToPinata(profilePictureFile);
       } else if (profilePictureFile === null) {
-        // The picture is being removed
+        // The picture is being removed, send null to the backend.
         requestBody.profilePictureUrl = null;
       }
-      // If profilePictureFile is undefined, the profilePictureUrl field is not sent,
-      // and the backend will not update it.
+      // If profilePictureFile is undefined (no change), the key is not added,
+      // so the backend should ignore it.
 
       const response = await fetch(`${BACKEND_URL}/api/users`, {
         method: 'POST',
@@ -250,7 +250,8 @@ export async function getWalletDetails(userAddress: `0x${string}`) {
         });
     } catch (error) {
         console.error('Could not fetch reward token address from contract, using fallback:', error);
-        tokenAddress = '0xb50c192B2AD5A34c30FbFbeb95fd51B0E5Af28E4';
+        // Fallback address just in case
+        tokenAddress = '0xf73978b3a7d1d4974abae11f696c1b4408c027a0';
     }
 
     try {
