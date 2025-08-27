@@ -7,9 +7,9 @@ import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-async function uploadToPinata(file: File) {
+export async function uploadToPinata(file: File) {
     const pinataJwtKey = process.env.PINATA_JWT_KEY;
     if (!pinataJwtKey) {
         throw new Error('Pinata API key is not configured.');
@@ -44,7 +44,7 @@ async function uploadToPinata(file: File) {
 // --- User Management ---
 export async function createUser(walletAddress: string, username: string) {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/users`, {
+    const response = await fetch(`${API_BASE_URL}/api/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -71,31 +71,16 @@ export async function createUser(walletAddress: string, username: string) {
   }
 }
 
-export async function updateUser(walletAddress: string, username: string, profilePictureFile?: File | null) {
+export async function updateUser(walletAddress: string, username: string, profilePictureUrl: string | null) {
     try {
-      const requestBody: {
-        walletAddress: string;
-        username: string;
-        profilePictureUrl?: string | null;
-      } = {
-        walletAddress,
-        username,
-      };
-
-      if (profilePictureFile) {
-        // A file is being uploaded
-        requestBody.profilePictureUrl = await uploadToPinata(profilePictureFile);
-      } else if (profilePictureFile === null) {
-        // The picture is being removed, send null to the backend.
-        requestBody.profilePictureUrl = null;
-      }
-      // If profilePictureFile is undefined (no change), the key is not added,
-      // so the backend should ignore it.
-
-      const response = await fetch(`${BACKEND_URL}/api/users`, {
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          walletAddress,
+          username,
+          profilePictureUrl,
+        }),
       });
 
       if (!response.ok) {
@@ -111,7 +96,7 @@ export async function updateUser(walletAddress: string, username: string, profil
 
 export async function getUserProfile(walletAddress: string) {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/users/${walletAddress}`);
+        const response = await fetch(`${API_BASE_URL}/api/users/${walletAddress}`);
         if (!response.ok) {
             if (response.status === 404) return null;
             const errorData = await response.json();
@@ -127,7 +112,7 @@ export async function getUserProfile(walletAddress: string) {
 // --- Score Management ---
 export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string, maxScore: number) {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/scores`, {
+    const response = await fetch(`${API_BASE_URL}/api/scores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -163,7 +148,7 @@ export async function submitScore(walletAddress: string, quizId: string, score: 
 // --- Leaderboard ---
 export async function getLeaderboard() {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/leaderboard`);
+        const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
         if (!response.ok) {
             throw new Error('Failed to fetch leaderboard');
         }

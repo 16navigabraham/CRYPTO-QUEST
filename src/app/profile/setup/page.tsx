@@ -12,14 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2, User as UserIcon, Upload, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getUserProfile, updateUser } from '@/app/actions';
+import { getUserProfile, updateUser, uploadToPinata } from '@/app/actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be 20 characters or less'),
-  // We accept a File for uploads, null for removal, or undefined for no change.
-  profilePicture: z.custom<File | null | undefined>().optional(),
+  profilePictureUrl: z.string().url().nullable().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -35,13 +34,12 @@ export default function ProfileSetupPage() {
   const { ready, authenticated, user } = usePrivy();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       username: '',
-      profilePicture: undefined, // Default to no change
+      profilePictureUrl: undefined,
     },
   });
 
@@ -52,19 +50,18 @@ export default function ProfileSetupPage() {
         if (profile && profile.data) {
           form.reset({
             username: profile.data.username || getUsername(user),
+            profilePictureUrl: profile.data.profilePictureUrl || null
           });
-          if(profile.data.profilePictureUrl) {
-            setImagePreview(profile.data.profilePictureUrl);
-          }
         } else {
            form.reset({
             username: getUsername(user),
+            profilePictureUrl: null
           });
         }
       } catch (error) {
         console.error('Failed to fetch profile', error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch your profile.' });
-         form.reset({ username: getUsername(user) });
+         form.reset({ username: getUsername(user), profilePictureUrl: null });
       } finally {
         setIsLoading(false);
       }
@@ -80,21 +77,25 @@ export default function ProfileSetupPage() {
     }
   }, [ready, authenticated, router, user, fetchProfile]);
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      form.setValue('profilePicture', file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setIsSubmitting(true);
+      try {
+        toast({ title: 'Uploading...', description: 'Your image is being uploaded to IPFS.' });
+        const imageUrl = await uploadToPinata(file);
+        form.setValue('profilePictureUrl', imageUrl, { shouldDirty: true });
+        toast({ title: 'Success!', description: 'Image uploaded. Save your profile to apply changes.' });
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Upload Failed', description: error instanceof Error ? error.message : 'An unknown error occurred.' });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const handleImageRemove = () => {
-    form.setValue('profilePicture', null); // Set to null to indicate removal
-    setImagePreview(null);
+    form.setValue('profilePictureUrl', null, { shouldDirty: true });
   }
 
   const onSubmit = async (values: ProfileFormValues) => {
@@ -104,8 +105,7 @@ export default function ProfileSetupPage() {
     }
     setIsSubmitting(true);
     try {
-      // The `values.profilePicture` will be a File, null, or undefined here.
-      await updateUser(user.wallet.address, values.username, values.profilePicture);
+      await updateUser(user.wallet.address, values.username, values.profilePictureUrl);
       toast({ title: 'Success', description: 'Your profile has been updated.' });
       router.push('/home');
     } catch (error) {
@@ -132,6 +132,8 @@ export default function ProfileSetupPage() {
       </div>
     );
   }
+  
+  const imagePreview = form.watch('profilePictureUrl');
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -163,7 +165,7 @@ export default function ProfileSetupPage() {
               />
               <FormField
                 control={form.control}
-                name="profilePicture"
+                name="profilePictureUrl"
                 render={() => (
                   <FormItem>
                     <FormLabel>Profile Picture</FormLabel>
@@ -178,12 +180,12 @@ export default function ProfileSetupPage() {
                                     <label>
                                         <Upload className="mr-2 h-4 w-4" />
                                         Upload Image
-                                        <input type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={handleImageChange} />
+                                        <input type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={handleImageChange} disabled={isSubmitting} />
                                     </label>
                                 </Button>
                             </FormControl>
                             {imagePreview && (
-                                <Button onClick={handleImageRemove} variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                <Button onClick={handleImageRemove} variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled={isSubmitting}>
                                     <Trash2 className="mr-2 h-4 w-4"/>
                                     Remove
                                 </Button>
