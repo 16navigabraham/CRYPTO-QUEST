@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowLeft, Crown, Medal, Trophy } from 'lucide-react';
@@ -109,7 +108,7 @@ export default function LeaderboardPage() {
             rank: p.rank,
             name: p.username || `User...${p.walletAddress.substring(p.walletAddress.length - 4)}`,
             score: p.score,
-            avatar: p.avatar,
+            avatar: p.profilePictureUrl,
         }));
         setPlayers(formattedData);
       } catch (error) {

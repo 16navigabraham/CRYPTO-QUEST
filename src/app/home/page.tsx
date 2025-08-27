@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -103,7 +102,7 @@ const RewardPool = () => {
 
 type UserProfile = {
   username: string;
-  profilePicture: string | null;
+  profilePictureUrl: string | null;
 }
 
 const WelcomeHeader = () => {
@@ -119,7 +118,7 @@ const WelcomeHeader = () => {
                     if (userProfile && userProfile.data) {
                         setProfile({
                             username: userProfile.data.username,
-                            profilePicture: userProfile.data.profilePicture
+                            profilePictureUrl: userProfile.data.profilePictureUrl
                         });
                     }
                 } catch (error) {
@@ -145,7 +144,7 @@ const WelcomeHeader = () => {
     return (
         <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={profile.profilePicture || undefined} />
+                <AvatarImage src={profile.profilePictureUrl || undefined} />
                 <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>

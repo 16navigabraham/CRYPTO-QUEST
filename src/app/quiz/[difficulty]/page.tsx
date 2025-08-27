@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -135,7 +134,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     if (!user?.wallet?.address || !quizId) return;
 
     try {
-      const result = await submitScore(user.wallet.address, quizId, score, params.difficulty);
+      const result = await submitScore(user.wallet.address, quizId, score, params.difficulty, numberOfQuestions);
        if (result.isDuplicate) {
         toast({
           title: "Score Not Saved",
@@ -156,7 +155,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         description: error instanceof Error ? error.message : "Could not save your score to the server.",
       });
     }
-  }, [user?.wallet?.address, quizId, score, params.difficulty, toast]);
+  }, [user?.wallet?.address, quizId, score, params.difficulty, toast, numberOfQuestions]);
 
 
   const handleNextQuestion = () => {
@@ -216,7 +215,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
           data: encodeFunctionData({
             abi: contractAbi,
             functionName: 'claimReward',
-            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(scoreInPercentage), BigInt(100)] // Use 100 as the 1x multiplier
+            args: [quizIdHashed, BigInt(difficultyConfig.id), BigInt(scoreInPercentage), BigInt(100)] // Using 100 as 1x multiplier
           }),
       };
 

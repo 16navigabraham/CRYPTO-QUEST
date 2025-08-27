@@ -1,4 +1,3 @@
-
 'use server';
 
 import { generateQuizQuestions, type GenerateQuizQuestionsInput, type GenerateQuizQuestionsOutput } from '@/ai/flows/quiz-generator';
@@ -8,7 +7,7 @@ import { publicClient } from '@/lib/viem';
 import { contractAbi, contractAddress } from '@/lib/contract';
 import { erc20Abi, formatUnits, type Hex, formatEther } from 'viem';
 
-const BACKEND_URL = 'https://cryptoquest-backend-q7ui.onrender.com';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 async function uploadToPinata(file: File) {
     const pinataJwtKey = process.env.PINATA_JWT_KEY;
@@ -51,7 +50,7 @@ export async function createUser(walletAddress: string, username: string) {
       body: JSON.stringify({
         walletAddress,
         username,
-        profilePicture: null,
+        profilePictureUrl: null,
       }),
     });
     
@@ -77,7 +76,7 @@ export async function updateUser(walletAddress: string, username: string, profil
       const requestBody: {
         walletAddress: string;
         username: string;
-        profilePicture?: string | null;
+        profilePictureUrl?: string | null;
       } = {
         walletAddress,
         username,
@@ -85,12 +84,12 @@ export async function updateUser(walletAddress: string, username: string, profil
 
       if (profilePictureFile) {
         // A file is being uploaded
-        requestBody.profilePicture = await uploadToPinata(profilePictureFile);
+        requestBody.profilePictureUrl = await uploadToPinata(profilePictureFile);
       } else if (profilePictureFile === null) {
         // The picture is being removed
-        requestBody.profilePicture = null;
+        requestBody.profilePictureUrl = null;
       }
-      // If profilePictureFile is undefined, the profilePicture field is not sent,
+      // If profilePictureFile is undefined, the profilePictureUrl field is not sent,
       // and the backend will not update it.
 
       const response = await fetch(`${BACKEND_URL}/api/users`, {
@@ -126,7 +125,7 @@ export async function getUserProfile(walletAddress: string) {
 }
 
 // --- Score Management ---
-export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string) {
+export async function submitScore(walletAddress: string, quizId: string, score: number, difficulty: string, maxScore: number) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/scores`, {
       method: 'POST',
@@ -136,6 +135,7 @@ export async function submitScore(walletAddress: string, quizId: string, score: 
         quizId, 
         score, 
         difficulty: difficulty.toLowerCase(),
+        maxScore,
       }),
     });
 
@@ -168,7 +168,6 @@ export async function getLeaderboard() {
             throw new Error('Failed to fetch leaderboard');
         }
         const leaderboardData = await response.json();
-        // Correctly access the nested leaderboard array
         return leaderboardData?.data?.leaderboard || [];
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
@@ -346,5 +345,3 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
         };
     }
 }
-
-    

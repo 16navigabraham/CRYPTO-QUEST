@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, ChangeEvent } from 'react';
@@ -54,8 +53,8 @@ export default function ProfileSetupPage() {
           form.reset({
             username: profile.data.username || getUsername(user),
           });
-          if(profile.data.profilePicture) {
-            setImagePreview(profile.data.profilePicture);
+          if(profile.data.profilePictureUrl) {
+            setImagePreview(profile.data.profilePictureUrl);
           }
         } else {
            form.reset({
