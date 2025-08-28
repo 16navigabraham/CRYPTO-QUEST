@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles } from 'lucide-react';
 import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
@@ -54,6 +54,17 @@ const difficultyLevels = [
     href: '/quiz/master',
   },
 ];
+
+const FloatingSymbols = () => (
+    <div className="absolute inset-0 -z-10 overflow-hidden">
+        <Sparkles className="absolute top-[5%] left-[10%] h-8 w-8 text-primary/10 animate-float" style={{ animationDelay: '0s', animationDuration: '10s' }} />
+        <Bitcoin className="absolute top-[20%] right-[5%] h-12 w-12 text-primary/10 animate-float" style={{ animationDelay: '2s', animationDuration: '12s' }} />
+        <Star className="absolute bottom-[10%] left-[15%] h-6 w-6 text-primary/10 animate-float" style={{ animationDelay: '4s', animationDuration: '8s' }} />
+        <Feather className="absolute bottom-[25%] right-[10%] h-10 w-10 text-primary/10 animate-float" style={{ animationDelay: '6s', animationDuration: '11s' }} />
+        <Trophy className="absolute top-[50%] left-[2%] h-10 w-10 text-primary/10 animate-float" style={{ animationDelay: '3s', animationDuration: '9s' }} />
+         <Sparkles className="absolute bottom-[5%] right-[2%] h-8 w-8 text-primary/10 animate-float" style={{ animationDelay: '1s', animationDuration: '13s' }} />
+    </div>
+);
 
 const RewardPool = () => {
     const [rewardPool, setRewardPool] = useState<{ balance: string; symbol: string } | null>(null);
@@ -197,7 +208,8 @@ export default function HomePage() {
   }
   
   return (
-    <main className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-6 md:p-8">
+    <main className="relative flex min-h-screen flex-col items-center bg-background p-4 sm:p-6 md:p-8">
+      <FloatingSymbols />
       <div className="w-full max-w-5xl space-y-8">
         <header className="flex justify-between items-center w-full gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
