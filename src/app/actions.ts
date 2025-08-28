@@ -1,4 +1,3 @@
-
 // src/app/actions.ts
 'use server';
 
@@ -68,7 +67,6 @@ export async function uploadToPinata(file: File): Promise<string> {
     }
 }
 
-
 export async function createUser(walletAddress: string, username: string, profilePictureUrl: string | null) {
   try {
     const response = await apiRequest('/api/users', {
@@ -80,15 +78,12 @@ export async function createUser(walletAddress: string, username: string, profil
       }),
     });
     
-    // A 409 Conflict means the user already exists, which is not an error for this flow.
-    if (response.status === 409) {
-        return { isDuplicate: true };
-    }
-
     return response;
   } catch (error) {
     console.error('Error creating user:', error);
-     if (error instanceof Error && error.message.includes('already exists')) {
+    if (error instanceof Error && error.message.includes('User with this wallet address already exists')) {
+        // This is not an error in the "create or update" flow, so we can ignore it
+        // and let the update logic handle it.
         return { isDuplicate: true };
     }
     throw error;
@@ -156,6 +151,20 @@ export async function getLeaderboard() {
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         return [];
+    }
+}
+
+export async function getUserQuizHistory(walletAddress: string) {
+    if (!walletAddress) return null;
+    try {
+        const response = await apiRequest(`/api/users/${walletAddress}/history`);
+        return response;
+    } catch (error) {
+        console.error('Error fetching quiz history:', error);
+        if (error instanceof Error && error.message.includes('User not found')) {
+            return null;
+        }
+        throw error;
     }
 }
 
