@@ -90,10 +90,10 @@ export default function LandingPage() {
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6 text-left">
                 <div className="min-h-[100px] sm:min-h-[120px]">
-                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground animate-typing">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground animate-typing">
                       Master Web3 Development,
                     </h2>
-                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-primary animate-typing" style={{animationDelay: '2s'}}>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary animate-typing" style={{animationDelay: '2s'}}>
                       One Quest at a Time.
                     </h2>
                 </div>
