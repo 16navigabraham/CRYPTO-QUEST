@@ -49,10 +49,6 @@ export default function LandingPage() {
                     CryptoQuest is a gamified learning platform that makes mastering complex blockchain concepts fun and interactive. Take quizzes, earn points, and become a Web3 expert.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                    <Button onClick={login} size="lg" disabled={disabled}>
-                         {(isNotifying || (ready && authenticated)) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Start Your Quest
-                    </Button>
                      <Button asChild size="lg" variant="secondary">
                         <Link href="/learn-more">Learn More</Link>
                     </Button>
