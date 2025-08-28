@@ -88,11 +88,11 @@ export default function LandingPage() {
       <section className="flex-grow flex flex-col items-center justify-center text-center p-4">
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6 text-left">
-                <div className="h-28">
-                    <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground inline-block">
+                <div className="min-h-[100px] sm:min-h-[120px]">
+                    <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
                         <h2 className="animate-typing">Master Web3 Development,</h2>
                     </div>
-                    <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-primary inline-block">
+                    <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-primary">
                          <h2 className="animate-typing" style={{animationDelay: '2s', animationTimingFunction: 'steps(20, end)', animationDuration: '2s'}}>One Quest at a Time.</h2>
                     </div>
                 </div>
