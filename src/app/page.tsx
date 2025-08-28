@@ -7,6 +7,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -14,6 +20,25 @@ const Logo = () => (
     <h1 className="text-3xl font-bold tracking-tight text-foreground">CryptoQuest</h1>
   </div>
 );
+
+const faqs = [
+    {
+        question: "What is CryptoQuest?",
+        answer: "CryptoQuest is a gamified learning platform designed to make mastering complex blockchain and Web3 development concepts fun and interactive. Take quizzes, earn points, and become a Web3 expert."
+    },
+    {
+        question: "Who is this platform for?",
+        answer: "CryptoQuest is built for developers of all skill levels—from complete beginners curious about blockchain to seasoned professionals looking to sharpen their skills on advanced topics."
+    },
+    {
+        question: "How do I earn rewards?",
+        answer: "By successfully completing quizzes, you earn points and can claim on-chain rewards in the form of our native token. The better you perform, the more you can earn."
+    },
+    {
+        question: "Is this free to use?",
+        answer: "Yes, CryptoQuest is completely free to use. You can sign up, take quizzes, and learn without any cost. You only need a small amount of cryptocurrency for gas fees if you choose to claim your rewards on-chain."
+    }
+]
 
 export default function LandingPage() {
   const { ready, authenticated, login, isNotifying } = usePrivy();
@@ -87,6 +112,29 @@ export default function LandingPage() {
                   </div>
               </div>
           </div>
+      </section>
+
+      <section id="faq" className="py-16 sm:py-24">
+        <div className="container mx-auto px-4">
+            <div className="text-center space-y-3 mb-12">
+                <h3 className="text-3xl sm:text-4xl font-bold">Frequently Asked Questions</h3>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Have questions? We've got answers.
+                </p>
+            </div>
+            <div className="max-w-3xl mx-auto">
+                <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground">
+                                {faq.answer}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </div>
       </section>
 
        <footer className="text-center p-6 bg-background">
