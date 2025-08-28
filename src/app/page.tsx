@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -90,10 +91,10 @@ export default function LandingPage() {
             <div className="space-y-6 text-left">
                 <div className="min-h-[100px] sm:min-h-[120px]">
                     <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                        <h2 className="animate-typing">Master Web3 Development,</h2>
+                        <h2 className="animate-typing" style={{animationTimingFunction: 'steps(25, end)', animationDuration: '2s'}}>Master Web3 Development,</h2>
                     </div>
                     <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-primary">
-                         <h2 className="animate-typing" style={{animationDelay: '2s', animationTimingFunction: 'steps(20, end)', animationDuration: '2s'}}>One Quest at a Time.</h2>
+                         <h2 className="animate-typing" style={{animationDelay: '2s', animationTimingFunction: 'steps(22, end)', animationDuration: '2s'}}>One Quest at a Time.</h2>
                     </div>
                 </div>
 
