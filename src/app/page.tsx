@@ -32,6 +32,17 @@ const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
   );
 
+const FarcasterIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+        {...props}
+    >
+        <path d="M18.999 3h-14a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm-1.5 6h-4v2h4a1 1 0 0 1 0 2h-4v2h4a3 3 0 1 1-3 3h-1a.999.999 0 0 1-1-1v-4a1 1 0 0 1 1-1h4V9h-4a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h1a5 5 0 1 0 0-10Z" />
+    </svg>
+);
+
 const faqs = [
     {
         question: "What is CryptoQuest?",
@@ -154,6 +165,10 @@ export default function LandingPage() {
              <a href="https://x.com/AbrahamNAVIG1" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 <XIcon className="h-5 w-5" />
                 <span className="sr-only">X/Twitter Profile</span>
+            </a>
+             <a href="https://farcaster.xyz/abrahamnavig" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <FarcasterIcon className="h-5 w-5" />
+                <span className="sr-only">Farcaster Profile</span>
             </a>
           </div>
         </footer>
