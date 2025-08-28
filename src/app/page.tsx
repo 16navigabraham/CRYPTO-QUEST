@@ -88,10 +88,12 @@ export default function LandingPage() {
       <section className="flex-grow flex flex-col items-center justify-center text-center p-4">
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6 text-left">
-                 <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-                    Master Web3 Development,
-                    <span className="block text-primary">One Quest at a Time.</span>
-                </h2>
+                <div className="animate-typing-container">
+                    <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+                        Master Web3 Development,
+                        <span className="block text-primary">One Quest at a Time.</span>
+                    </h2>
+                </div>
                 <p className="text-lg sm:text-xl text-muted-foreground">
                     CryptoQuest is a gamified learning platform that makes mastering complex blockchain concepts fun and interactive. Take quizzes, earn points, and become a Web3 expert.
                 </p>
