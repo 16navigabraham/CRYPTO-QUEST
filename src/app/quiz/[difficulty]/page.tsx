@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb, Timer, Zap } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb, Timer as TimerIcon, Zap, Clock } from 'lucide-react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { type Hex, encodeFunctionData, keccak256, encodePacked } from 'viem';
@@ -28,13 +28,20 @@ type Question = {
 type QuizState = 'selection' | 'loading' | 'active' | 'completed' | 'error';
 type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
 
-const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; } } = {
-  beginner: { id: 0, questionCount: 20, passPercentage: 70 },
-  intermediate: { id: 1, questionCount: 25, passPercentage: 75 },
-  advanced: { id: 2, questionCount: 30, passPercentage: 80 },
-  expert: { id: 3, questionCount: 25, passPercentage: 85 },
-  master: { id: 4, questionCount: 20, passPercentage: 90 },
+const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; timePerQuestion: number; } } = {
+  beginner: { id: 0, questionCount: 20, passPercentage: 70, timePerQuestion: 45 },
+  intermediate: { id: 1, questionCount: 25, passPercentage: 75, timePerQuestion: 40 },
+  advanced: { id: 2, questionCount: 30, passPercentage: 80, timePerQuestion: 35 },
+  expert: { id: 3, questionCount: 25, passPercentage: 85, timePerQuestion: 30 },
+  master: { id: 4, questionCount: 20, passPercentage: 90, timePerQuestion: 30 },
 };
+
+const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
 
 export default function QuizPage({ params }: { params: { difficulty: string } }) {
   const [quizState, setQuizState] = useState<QuizState>('selection');
@@ -52,6 +59,9 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [hint, setHint] = useState<{ forQuestion: number; text: string } | null>(null);
   const [isHintLoading, setIsHintLoading] = useState(false);
   const [numberOfQuestions, setNumberOfQuestions] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [timeUp, setTimeUp] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const { toast } = useToast();
   const { ready, authenticated, user } = usePrivy();
@@ -62,6 +72,70 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   
   const difficulty = useMemo(() => params.difficulty.charAt(0).toUpperCase() + params.difficulty.slice(1), [params.difficulty]);
   const difficultyConfig = useMemo(() => difficultyMap[params.difficulty], [params.difficulty]);
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+    }
+  };
+
+  const handleQuizCompletion = useCallback(async (reason: 'finished' | 'timeup' = 'finished') => {
+    clearTimer();
+    if(reason === 'timeup') {
+        setTimeUp(true);
+    }
+    setQuizState('completed');
+    if (!user?.wallet?.address || !quizId) return;
+
+    try {
+      const result = await submitScore(user.wallet.address, quizId, score, params.difficulty, numberOfQuestions);
+       if (result.isDuplicate) {
+        toast({
+          title: "Score Not Saved",
+          description: "You have already completed a quiz with this ID.",
+          variant: 'default'
+        });
+      } else {
+        toast({
+          title: "Score Saved!",
+          description: "Your score has been saved to the leaderboard.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to submit score:", error);
+      toast({
+        variant: 'destructive',
+        title: "Score Sync Failed",
+        description: error instanceof Error ? error.message : "Could not save your score to the server.",
+      });
+    }
+  }, [user?.wallet?.address, quizId, score, params.difficulty, toast, numberOfQuestions]);
+
+  useEffect(() => {
+    return () => {
+      clearTimer();
+    };
+  }, []);
+
+  useEffect(() => {
+        if (quizState === 'active' && timeRemaining !== null) {
+            timerRef.current = setInterval(() => {
+                setTimeRemaining(prev => {
+                    if (prev === null || prev <= 1) {
+                        clearTimer();
+                        handleQuizCompletion('timeup');
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } else {
+            clearTimer();
+        }
+        return clearTimer;
+    }, [quizState, timeRemaining, handleQuizCompletion]);
+
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -96,10 +170,12 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     setClaimState('idle');
     setHint(null);
     setIsHintLoading(false);
+    setTimeUp(false);
     setQuizId(crypto.randomUUID());
     try {
       const fetchedQuestions = await getQuizQuestions(params.difficulty, questionCount);
       setQuestions(fetchedQuestions);
+      setTimeRemaining(questionCount * difficultyConfig.timePerQuestion);
       setQuizState('active');
       if (fetchedQuestions.length > 0) {
         handleTextToSpeech(fetchedQuestions[0].question);
@@ -130,34 +206,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
 
   const percentage = numberOfQuestions > 0 ? Math.round((score / numberOfQuestions) * 100) : 0;
 
-  const handleQuizCompletion = useCallback(async () => {
-    setQuizState('completed');
-    if (!user?.wallet?.address || !quizId) return;
-
-    try {
-      const result = await submitScore(user.wallet.address, quizId, score, params.difficulty, numberOfQuestions);
-       if (result.isDuplicate) {
-        toast({
-          title: "Score Not Saved",
-          description: "You have already completed a quiz with this ID.",
-          variant: 'default'
-        });
-      } else {
-        toast({
-          title: "Score Saved!",
-          description: "Your score has been saved to the leaderboard.",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to submit score:", error);
-      toast({
-        variant: 'destructive',
-        title: "Score Sync Failed",
-        description: error instanceof Error ? error.message : "Could not save your score to the server.",
-      });
-    }
-  }, [user?.wallet?.address, quizId, score, params.difficulty, toast, numberOfQuestions]);
-
 
   const handleNextQuestion = () => {
     const nextIndex = currentQuestionIndex + 1;
@@ -169,7 +217,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
       setHint(null);
       handleTextToSpeech(questions[nextIndex].question);
     } else {
-      handleQuizCompletion();
+      handleQuizCompletion('finished');
     }
   };
 
@@ -300,7 +348,7 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
             >
               <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
                 <div className="bg-primary/10 p-3 rounded-full">
-                  <Timer className="h-10 w-10 text-primary" />
+                  <TimerIcon className="h-10 w-10 text-primary" />
                 </div>
                 <div className="space-y-1">
                   <CardTitle className="text-xl">Full Quiz</CardTitle>
@@ -380,7 +428,11 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CardTitle className="text-3xl">Quiz Completed!</CardTitle>
-            <CardDescription>You've finished the {difficulty} quiz.</CardDescription>
+            {timeUp ? (
+                <CardDescription className="text-destructive font-semibold">Time's up! Here's how you did.</CardDescription>
+            ) : (
+                <CardDescription>You've finished the {difficulty} quiz.</CardDescription>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             <div className='space-y-2'>
@@ -456,7 +508,15 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         <CardHeader>
           <div className="flex justify-between items-center mb-2">
             <CardTitle>CryptoQuest: {difficulty}</CardTitle>
-            <Badge variant="secondary">Score: {score}</Badge>
+            <div className="flex items-center gap-4">
+                {timeRemaining !== null && (
+                     <Badge variant={timeRemaining < 60 ? 'destructive' : 'secondary'} className="text-base font-mono">
+                        <Clock className="mr-2 h-4 w-4"/>
+                        {formatTime(timeRemaining)}
+                    </Badge>
+                )}
+                <Badge variant="secondary">Score: {score}</Badge>
+            </div>
           </div>
           <CardDescription>
             Question {currentQuestionIndex + 1} of {numberOfQuestions}
@@ -530,5 +590,3 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     </div>
   );
 }
-
-    
