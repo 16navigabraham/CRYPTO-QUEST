@@ -56,6 +56,13 @@ const difficultyLevels = [
   },
 ];
 
+const EthereumIcon = (props: SVGProps<SVGSVGElement>) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+        <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z" />
+    </svg>
+);
+
+
 const FloatingSymbols = () => (
     <div className="absolute inset-0 -z-10 overflow-hidden">
         <Sparkles className="absolute top-[5%] left-[10%] h-8 w-8 text-primary/10 animate-float" style={{ animationDelay: '0s', animationDuration: '10s' }} />
@@ -63,7 +70,9 @@ const FloatingSymbols = () => (
         <Star className="absolute bottom-[10%] left-[15%] h-6 w-6 text-primary/10 animate-float" style={{ animationDelay: '4s', animationDuration: '8s' }} />
         <Feather className="absolute bottom-[25%] right-[10%] h-10 w-10 text-primary/10 animate-float" style={{ animationDelay: '6s', animationDuration: '11s' }} />
         <Trophy className="absolute top-[50%] left-[2%] h-10 w-10 text-primary/10 animate-float" style={{ animationDelay: '3s', animationDuration: '9s' }} />
-         <Sparkles className="absolute bottom-[5%] right-[2%] h-8 w-8 text-primary/10 animate-float" style={{ animationDelay: '1s', animationDuration: '13s' }} />
+        <Sparkles className="absolute bottom-[5%] right-[2%] h-8 w-8 text-primary/10 animate-float" style={{ animationDelay: '1s', animationDuration: '13s' }} />
+        <EthereumIcon className="absolute top-[60%] right-[15%] h-10 w-10 text-primary/10 animate-float" style={{ animationDelay: '5s', animationDuration: '15s' }} />
+        <EthereumIcon className="absolute top-[15%] left-[30%] h-6 w-6 text-primary/10 animate-float" style={{ animationDelay: '7s', animationDuration: '10s' }} />
     </div>
 );
 
