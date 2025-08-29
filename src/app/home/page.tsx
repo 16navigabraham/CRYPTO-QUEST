@@ -21,6 +21,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { cn } from '@/lib/utils';
+import { FollowMePopup } from '@/components/FollowMePopup';
 
 const difficultyLevels = [
   {
@@ -209,6 +210,7 @@ export default function HomePage() {
   
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-background p-4 sm:p-6 md:p-8">
+      <FollowMePopup />
       <FloatingSymbols />
       <div className="w-full max-w-5xl space-y-8">
         <header className="flex justify-between items-center w-full gap-2 sm:gap-4">

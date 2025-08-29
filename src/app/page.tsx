@@ -14,6 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { FollowMePopup } from '@/components/FollowMePopup';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
@@ -77,6 +78,7 @@ export default function LandingPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-background">
+      <FollowMePopup />
       <header className="flex justify-between items-center p-4 sm:p-6">
         <Logo />
         <Button onClick={login} variant="outline" disabled={disabled}>
