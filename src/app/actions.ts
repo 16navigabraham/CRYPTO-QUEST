@@ -325,7 +325,7 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
         ]);
         
         return {
-            balance: formatUnits(balance, decimals),
+            balance: formatUnits(balance as bigint, decimals),
             symbol,
         };
 
