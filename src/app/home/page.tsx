@@ -111,7 +111,7 @@ const RewardPool = () => {
                 ) : (
                     <>
                         <div className="text-2xl font-bold">
-                            {rewardPool ? BigInt(rewardPool.balance).toLocaleString('en-US') : '0'}
+                            {rewardPool ? rewardPool.balance : '0'}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {rewardPool?.symbol} available for skilled players
