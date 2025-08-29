@@ -28,12 +28,12 @@ type Question = {
 type QuizState = 'selection' | 'loading' | 'active' | 'completed' | 'error';
 type ClaimState = 'idle' | 'claiming' | 'claimed' | 'claim_error';
 
-const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; timePerQuestion: number; } } = {
-  beginner: { id: 0, questionCount: 20, passPercentage: 70, timePerQuestion: 45 },
-  intermediate: { id: 1, questionCount: 25, passPercentage: 75, timePerQuestion: 40 },
-  advanced: { id: 2, questionCount: 30, passPercentage: 80, timePerQuestion: 35 },
-  expert: { id: 3, questionCount: 25, passPercentage: 85, timePerQuestion: 30 },
-  master: { id: 4, questionCount: 20, passPercentage: 90, timePerQuestion: 30 },
+const difficultyMap: { [key: string]: { id: number; questionCount: number; passPercentage: number; } } = {
+  beginner: { id: 0, questionCount: 20, passPercentage: 70 },
+  intermediate: { id: 1, questionCount: 25, passPercentage: 75 },
+  advanced: { id: 2, questionCount: 30, passPercentage: 80 },
+  expert: { id: 3, questionCount: 25, passPercentage: 85 },
+  master: { id: 4, questionCount: 20, passPercentage: 90 },
 };
 
 const formatTime = (seconds: number) => {
@@ -175,7 +175,12 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     try {
       const fetchedQuestions = await getQuizQuestions(params.difficulty, questionCount);
       setQuestions(fetchedQuestions);
-      setTimeRemaining(questionCount * difficultyConfig.timePerQuestion);
+      // Set time limit based on number of questions
+      if (questionCount === 10) {
+        setTimeRemaining(120); // 2 minutes for 10 questions
+      } else {
+        setTimeRemaining(300); // 5 minutes for 20+ questions
+      }
       setQuizState('active');
       if (fetchedQuestions.length > 0) {
         handleTextToSpeech(fetchedQuestions[0].question);
