@@ -311,21 +311,14 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
             })
          ]);
 
-        const [decimals, symbol] = await Promise.all([
-             publicClient.readContract({
-                address: tokenAddress,
-                abi: erc20Abi,
-                functionName: 'decimals',
-            }),
-            publicClient.readContract({
-                address: tokenAddress,
-                abi: erc20Abi,
-                functionName: 'symbol',
-            })
-        ]);
+        const symbol = await publicClient.readContract({
+            address: tokenAddress,
+            abi: erc20Abi,
+            functionName: 'symbol',
+        });
         
         return {
-            balance: formatUnits(balance as bigint, decimals),
+            balance: (balance as bigint).toString(),
             symbol,
         };
 
