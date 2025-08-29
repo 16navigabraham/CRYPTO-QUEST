@@ -111,7 +111,7 @@ const RewardPool = () => {
                 ) : (
                     <>
                         <div className="text-2xl font-bold">
-                            {rewardPool ? rewardPool.balance : '0'}
+                            {rewardPool ? parseFloat(rewardPool.balance).toLocaleString('en-US', {maximumFractionDigits: 2}) : '0'}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {rewardPool?.symbol} available for skilled players
