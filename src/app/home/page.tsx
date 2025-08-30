@@ -193,7 +193,6 @@ const WelcomeHeader = () => {
         const fetchProfileAndWhitelistStatus = async () => {
             if (user?.wallet?.address) {
                 try {
-                    setLoading(true);
                     const [userProfile, whitelisted] = await Promise.all([
                         getUserProfile(user.wallet.address),
                         isUserWhitelisted(user.wallet.address as `0x${string}`)
@@ -209,6 +208,8 @@ const WelcomeHeader = () => {
                 } finally {
                     setLoading(false);
                 }
+            } else if (user) {
+                // User object exists but wallet is not available yet, wait.
             } else {
                 setLoading(false);
             }
