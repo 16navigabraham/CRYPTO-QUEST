@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles, HandCoins } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles, HandCoins, ShieldCheck, ShieldOff } from 'lucide-react';
 import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getContractRewardPool, getUserProfile, getTotalRewardsDistributed } from '../actions';
+import { getContractRewardPool, getUserProfile, getTotalRewardsDistributed, isUserWhitelisted } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -20,6 +20,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from '@/lib/utils';
 import { FollowMePopup } from '@/components/FollowMePopup';
 
@@ -180,18 +186,26 @@ type UserProfile = {
 const WelcomeHeader = () => {
     const { user } = usePrivy();
     const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [isWhitelisted, setIsWhitelisted] = useState<boolean | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchProfileAndWhitelistStatus = async () => {
             if (user?.wallet?.address) {
                 try {
-                    const userProfile = await getUserProfile(user.wallet.address);
+                    setLoading(true);
+                    const [userProfile, whitelisted] = await Promise.all([
+                        getUserProfile(user.wallet.address),
+                        isUserWhitelisted(user.wallet.address as `0x${string}`)
+                    ]);
+                    
                     if (userProfile && userProfile.data) {
                         setProfile(userProfile.data);
                     }
+                    setIsWhitelisted(whitelisted);
+
                 } catch (error) {
-                    console.error("Failed to fetch user profile", error);
+                    console.error("Failed to fetch user data", error);
                 } finally {
                     setLoading(false);
                 }
@@ -199,7 +213,7 @@ const WelcomeHeader = () => {
                 setLoading(false);
             }
         }
-        fetchProfile();
+        fetchProfileAndWhitelistStatus();
     }, [user]);
 
     if (loading) {
@@ -232,7 +246,34 @@ const WelcomeHeader = () => {
                             <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <h2 className="text-xl sm:text-2xl font-bold">Welcome, {profile.username}!</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-xl sm:text-2xl font-bold">Welcome, {profile.username}!</h2>
+                                {isWhitelisted !== null && (
+                                    isWhitelisted ? (
+                                         <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <ShieldCheck className="h-6 w-6 text-green-500" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>You are verified to claim rewards!</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    ) : (
+                                         <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <ShieldOff className="h-6 w-6 text-destructive" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Admin needs to whitelist your Address to be verified and claim rewards</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )
+                                )}
+                            </div>
                             <p className="text-sm sm:text-base text-muted-foreground">Ready for your next challenge?</p>
                         </div>
                     </div>
@@ -352,6 +393,3 @@ export default function HomePage() {
     </main>
   );
 }
-
-
-    
