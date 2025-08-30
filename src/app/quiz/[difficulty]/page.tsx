@@ -3,14 +3,14 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { getQuizQuestions, submitScore, textToSpeech, getWalletDetails, getHint } from '@/app/actions';
+import { getQuizQuestions, submitScore, textToSpeech, getWalletDetails, getHint, isUserWhitelisted } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb, Timer as TimerIcon, Zap, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle, RefreshCw, XCircle, Volume2, Award, Wallet, Home, Loader2, PartyPopper, AlertTriangle, Lightbulb, Timer as TimerIcon, Zap, Clock, ShieldCheck, ShieldOff } from 'lucide-react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { type Hex, encodeFunctionData, keccak256, encodePacked } from 'viem';
@@ -62,6 +62,8 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [timeUp, setTimeUp] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isWhitelistedForClaim, setIsWhitelistedForClaim] = useState<boolean | null>(null);
+  const [isCheckingWhitelist, setIsCheckingWhitelist] = useState(false);
   
   const { toast } = useToast();
   const { ready, authenticated, user } = usePrivy();
@@ -196,6 +198,30 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
         getWalletDetails(embeddedWallet.address as `0x${string}`).then(details => setRewardTokenSymbol(details.rewardToken.symbol));
     }
   }, [ready, authenticated, embeddedWallet?.address]);
+
+    const passed = useMemo(() => {
+        if (!difficultyConfig) return false;
+        return (score / numberOfQuestions) * 100 >= difficultyConfig.passPercentage;
+    }, [score, numberOfQuestions, difficultyConfig]);
+
+   useEffect(() => {
+    const checkWhitelist = async () => {
+      if (quizState === 'completed' && passed && embeddedWallet?.address) {
+        setIsCheckingWhitelist(true);
+        try {
+          const isWhitelisted = await isUserWhitelisted(embeddedWallet.address as `0x${string}`);
+          setIsWhitelistedForClaim(isWhitelisted);
+        } catch (error) {
+          console.error("Failed to check whitelist status:", error);
+          setIsWhitelistedForClaim(false); // Default to false on error
+        } finally {
+          setIsCheckingWhitelist(false);
+        }
+      }
+    };
+    checkWhitelist();
+  }, [quizState, passed, embeddedWallet?.address]);
+
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (isAnswered) return;
@@ -425,7 +451,6 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
     );
   }
 
-  const passed = percentage >= difficultyConfig.passPercentage;
 
   if (quizState === 'completed') {
     return (
@@ -448,36 +473,53 @@ export default function QuizPage({ params }: { params: { difficulty: string } })
               <p className={cn("text-2xl font-semibold", passed ? "text-green-500" : "text-destructive")}>{percentage}%</p>
               <p className="text-sm text-muted-foreground">{passed ? "Congratulations, you passed!" : `You needed ${difficultyConfig.passPercentage}% to pass.`}</p>
             </div>
+            
             {passed && (
-              <Card className="p-4 space-y-3">
-                <div className="flex items-center justify-center gap-2">
-                  <Award className="h-6 w-6 text-primary" />
-                  <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Claim your {rewardTokenSymbol || 'tokens'} on Base for completing this quiz!
-                </p>
-                
-                 <Alert variant="default" className="text-left">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Gas Fees Required</AlertTitle>
-                  <AlertDescription>
-                    You will need a small amount of Base ETH in your wallet to pay for transaction fees (gas) to claim your rewards.
-                  </AlertDescription>
-                </Alert>
+                isCheckingWhitelist ? (
+                    <div className="flex items-center justify-center space-x-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Checking eligibility...</span>
+                    </div>
+                ) : isWhitelistedForClaim === true ? (
+                    <Card className="p-4 space-y-3">
+                        <div className="flex items-center justify-center gap-2">
+                        <Award className="h-6 w-6 text-primary" />
+                        <h3 className="text-xl font-semibold">Claim Your Rewards</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                        Claim your {rewardTokenSymbol || 'tokens'} on Base for completing this quiz!
+                        </p>
+                        
+                        <Alert variant="default" className="text-left">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Gas Fees Required</AlertTitle>
+                        <AlertDescription>
+                            You will need a small amount of Base ETH in your wallet to pay for transaction fees (gas) to claim your rewards.
+                        </AlertDescription>
+                        </Alert>
 
-                <Button onClick={handleClaimRewards} disabled={isSending || claimState === 'claimed'}>
-                  {(isSending || claimState === 'claiming') && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
-                </Button>
-                {claimState === 'claim_error' && (
-                    <p className="text-xs text-destructive flex items-center justify-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        Something went wrong. Please try again.
-                    </p>
-                )}
-              </Card>
+                        <Button onClick={handleClaimRewards} disabled={isSending || claimState === 'claimed'}>
+                        {(isSending || claimState === 'claiming') && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {claimState === 'claimed' ? <><PartyPopper className="mr-2 h-4 w-4" />Claimed!</> : 'Claim Rewards'}
+                        </Button>
+                        {claimState === 'claim_error' && (
+                            <p className="text-xs text-destructive flex items-center justify-center gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                Something went wrong. Please try again.
+                            </p>
+                        )}
+                    </Card>
+                ) : isWhitelistedForClaim === false ? (
+                     <Alert variant="destructive">
+                        <ShieldOff className="h-4 w-4" />
+                        <AlertTitle>Not Eligible to Claim</AlertTitle>
+                        <AlertDescription>
+                            Your wallet address is not whitelisted to claim rewards at this time. Please contact the platform owner for assistance.
+                        </AlertDescription>
+                    </Alert>
+                ) : null
             )}
+
             {embeddedWallet && (
               <div className="space-y-2 text-left text-sm">
                  <div className="flex items-center gap-2">

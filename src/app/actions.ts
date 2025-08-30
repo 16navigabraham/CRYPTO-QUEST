@@ -337,3 +337,20 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
         };
     }
 }
+
+export async function isUserWhitelisted(userAddress: `0x${string}`): Promise<boolean> {
+    if (!userAddress) return false;
+    try {
+        const isWhitelisted = await publicClient.readContract({
+            address: contractAddress,
+            abi: contractAbi,
+            functionName: 'isWhitelisted',
+            args: [userAddress],
+        });
+        return isWhitelisted as boolean;
+    } catch (error) {
+        console.error('Error checking whitelist status:', error);
+        // Default to false in case of an error to be safe
+        return false;
+    }
+}
