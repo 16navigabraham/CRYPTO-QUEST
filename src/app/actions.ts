@@ -338,6 +338,48 @@ export async function getContractRewardPool(): Promise<{ balance: string; symbol
     }
 }
 
+export async function getTotalRewardsDistributed(): Promise<{ balance: string; symbol: string; }> {
+    try {
+        const [totalDistributed, tokenAddress] = await Promise.all([
+            publicClient.readContract({
+                address: contractAddress,
+                abi: contractAbi,
+                functionName: 'totalRewardsDistributed',
+            }),
+            publicClient.readContract({
+                address: contractAddress,
+                abi: contractAbi,
+                functionName: 'rewardToken',
+            })
+        ]);
+
+        const [symbol, decimals] = await Promise.all([
+             publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'symbol',
+            }),
+             publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'decimals',
+            })
+        ]);
+        
+        return {
+            balance: formatUnits(totalDistributed as bigint, decimals),
+            symbol,
+        };
+
+    } catch (error) {
+        console.error('Error fetching total rewards distributed:', error);
+        return {
+            balance: '0',
+            symbol: 'Tokens',
+        };
+    }
+}
+
 export async function isUserWhitelisted(userAddress: `0x${string}`): Promise<boolean> {
     if (!userAddress) return false;
     try {

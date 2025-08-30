@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles, HandCoins } from 'lucide-react';
 import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getContractRewardPool, getUserProfile } from '../actions';
+import { getContractRewardPool, getUserProfile, getTotalRewardsDistributed } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -111,7 +111,7 @@ const RewardPool = () => {
                 ) : (
                     <>
                         <div className="text-2xl font-bold">
-                            {rewardPool ? parseFloat(rewardPool.balance).toLocaleString('en-US', {maximumFractionDigits: 2}) : '0'}
+                             {rewardPool ? parseFloat(rewardPool.balance).toLocaleString('en-US', {maximumFractionDigits: 2}) : '0'}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {rewardPool?.symbol} available for skilled players
@@ -122,6 +122,54 @@ const RewardPool = () => {
         </Card>
     );
 };
+
+const TotalRewardsDistributed = () => {
+    const [distributed, setDistributed] = useState<{ balance: string; symbol: string } | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDistributed = async () => {
+            setLoading(true);
+            try {
+                const data = await getTotalRewardsDistributed();
+                setDistributed(data);
+            } catch (error) {
+                console.error("Failed to fetch total rewards distributed", error);
+                setDistributed({ balance: '0', symbol: 'Tokens' });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDistributed();
+    }, []);
+
+    return (
+        <Card className="bg-secondary/10 border-secondary/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Rewards Distributed</CardTitle>
+                <HandCoins className="h-5 w-5 text-secondary" />
+            </CardHeader>
+            <CardContent>
+                {loading ? (
+                    <>
+                        <Skeleton className="h-8 w-3/4" />
+                        <Skeleton className="h-4 w-1/4 mt-1" />
+                    </>
+                ) : (
+                    <>
+                        <div className="text-2xl font-bold">
+                            {distributed ? parseFloat(distributed.balance).toLocaleString('en-US', {maximumFractionDigits: 2}) : '0'}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {distributed?.symbol} claimed by users
+                        </p>
+                    </>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
 
 type UserProfile = {
   username: string;
@@ -250,7 +298,10 @@ export default function HomePage() {
 
         <WelcomeHeader />
         
-        <RewardPool />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <RewardPool />
+          <TotalRewardsDistributed />
+        </div>
 
         <div className="text-center">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Choose Your Challenge</h2>
