@@ -112,10 +112,12 @@ export default function LandingPage() {
             <div className="relative h-64 md:h-96">
                  <Image
                     src="/cat.jpg"
-                    alt="CryptoQuest Hero Image"
-                    fill
+                    alt="A heroic cartoon cat wearing glasses, ready for a coding quest."
+                    width={1200}
+                    height={675}
                     className="object-cover rounded-xl shadow-2xl"
                     data-ai-hint="cartoon cat"
+                    priority
                   />
             </div>
         </div>

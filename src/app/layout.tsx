@@ -4,9 +4,49 @@ import { Toaster } from "@/components/ui/toaster";
 import { PrivyProviderWrapper } from '@/components/PrivyProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
-  title: 'CryptoQuest',
-  description: 'A gamified crypto education platform for developers.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'CryptoQuest - Master Web3 Development',
+    template: `%s | CryptoQuest`,
+  },
+  description: 'CryptoQuest is a gamified learning platform that makes mastering complex blockchain concepts fun and interactive. Take quizzes, earn points, and become a Web3 expert.',
+  keywords: ['Crypto', 'Web3', 'Blockchain', 'Developer', 'Education', 'Quiz', 'Gamified Learning', 'Smart Contracts', 'Solidity'],
+  openGraph: {
+    title: 'CryptoQuest - Master Web3 Development, One Quest at a Time',
+    description: 'A gamified learning platform for developers to master blockchain concepts and earn on-chain rewards.',
+    url: siteUrl,
+    siteName: 'CryptoQuest',
+    images: [
+      {
+        url: '/cat.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'A heroic cat on a quest for crypto knowledge.',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CryptoQuest - Master Web3 Development',
+    description: 'Learn Web3, take quizzes, earn crypto. Your adventure into blockchain development starts here.',
+    images: [`${siteUrl}/cat.jpg`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
