@@ -233,6 +233,32 @@ export async function textToSpeech(text: string): Promise<TextToSpeechOutput> {
   }
 }
 
+async function getPrices(tokenAddress: string) {
+    try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/token_price/base?contract_addresses=${tokenAddress}&vs_currencies=usd&include_24hr_change=true`);
+        if (!response.ok) {
+            console.error('Failed to fetch token price from CoinGecko');
+            return null;
+        }
+        const data = await response.json();
+        
+        const ethResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd`);
+        if (!ethResponse.ok) {
+            console.error('Failed to fetch ETH price from CoinGecko');
+            return { tokenPrice: data[tokenAddress.toLowerCase()] || { usd: 0 }, ethPrice: { usd: 0 } };
+        }
+        const ethData = await ethResponse.json();
+
+        return {
+            tokenPrice: data[tokenAddress.toLowerCase()] || { usd: 0 },
+            ethPrice: ethData.ethereum || { usd: 0 }
+        };
+    } catch (error) {
+        console.error('Error fetching prices from CoinGecko:', error);
+        return null;
+    }
+}
+
 export async function getWalletDetails(userAddress: `0x${string}`) {
     let tokenAddress: `0x${string}`;
     try {
@@ -247,7 +273,7 @@ export async function getWalletDetails(userAddress: `0x${string}`) {
     }
 
     try {
-        const [rewardTokenBalance, symbol, decimals, ethBalance] = await Promise.all([
+        const [rewardTokenBalance, symbol, decimals, ethBalance, prices] = await Promise.all([
             publicClient.readContract({
                 address: tokenAddress,
                 abi: erc20Abi,
@@ -264,19 +290,25 @@ export async function getWalletDetails(userAddress: `0x${string}`) {
                 abi: erc20Abi,
                 functionName: 'decimals',
             }),
-            publicClient.getBalance({ address: userAddress })
+            publicClient.getBalance({ address: userAddress }),
+            getPrices(tokenAddress)
         ]);
+
+        const formattedRewardBalance = formatUnits(rewardTokenBalance, decimals);
+        const formattedEthBalance = formatEther(ethBalance);
 
         return {
             rewardToken: {
-                balance: formatUnits(rewardTokenBalance, decimals),
+                balance: formattedRewardBalance,
                 symbol,
                 decimals,
                 tokenAddress,
+                usdValue: (parseFloat(formattedRewardBalance) * (prices?.tokenPrice?.usd || 0)).toFixed(2),
             },
             eth: {
-                balance: formatEther(ethBalance),
+                balance: formattedEthBalance,
                 symbol: 'ETH',
+                usdValue: (parseFloat(formattedEthBalance) * (prices?.ethPrice?.usd || 0)).toFixed(2),
             }
         };
     } catch (error) {
@@ -287,10 +319,12 @@ export async function getWalletDetails(userAddress: `0x${string}`) {
                 symbol: 'CQT',
                 decimals: 18,
                 tokenAddress: tokenAddress,
+                usdValue: '0.00',
             },
             eth: {
                 balance: '0',
                 symbol: 'ETH',
+                usdValue: '0.00',
             }
         };
     }

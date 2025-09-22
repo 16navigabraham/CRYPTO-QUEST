@@ -42,10 +42,12 @@ type WalletDetails = {
         symbol: string;
         decimals: number;
         tokenAddress: `0x${string}`;
+        usdValue: string;
     };
     eth: {
         balance: string;
         symbol: string;
+        usdValue: string;
     };
 }
 
@@ -254,9 +256,21 @@ export default function WalletPage() {
                                 <span className="text-sm text-muted-foreground">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
-                                </div>
+                                {isLoading ? (
+                                    <>
+                                        <Skeleton className="h-8 w-3/4" />
+                                        <Skeleton className="h-4 w-1/4 mt-2" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="text-2xl font-bold">
+                                            {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            ${walletDetails?.rewardToken.usdValue || '0.00'} USD
+                                        </p>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                         <Card>
@@ -265,10 +279,21 @@ export default function WalletPage() {
                                  <span className="text-sm text-muted-foreground">ETH</span>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
-                                </div>
-                                <p className="text-xs text-muted-foreground">Used for gas fees</p>
+                                {isLoading ? (
+                                    <>
+                                        <Skeleton className="h-8 w-3/4" />
+                                        <Skeleton className="h-4 w-1/4 mt-2" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="text-2xl font-bold">
+                                            {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            ${walletDetails?.eth.usdValue || '0.00'} USD
+                                        </p>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                          <Separator />
