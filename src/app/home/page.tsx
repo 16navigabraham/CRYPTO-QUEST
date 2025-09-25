@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles, HandCoins, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles, HandCoins, ShieldCheck, ShieldOff, Lock } from 'lucide-react';
 import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getContractRewardPool, getUserProfile, getTotalRewardsDistributed, isUserWhitelisted } from '../actions';
+import { getContractRewardPool, getUserProfile, getTotalRewardsDistributed, isUserWhitelisted, getUserQuizHistory } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -29,7 +29,14 @@ import {
 import { cn } from '@/lib/utils';
 import { FollowMePopup } from '@/components/FollowMePopup';
 
-const difficultyLevels = [
+type Difficulty = {
+  name: string;
+  description: string;
+  icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+  href: string;
+}
+
+const difficultyLevels: Difficulty[] = [
   {
     name: 'Beginner',
     description: 'Start your journey. Basic concepts and syntax.',
@@ -192,6 +199,9 @@ const WelcomeHeader = () => {
     useEffect(() => {
         const fetchProfileAndWhitelistStatus = async () => {
             if (user?.wallet?.address) {
+                if (loading) { // Only set loading on the initial fetch
+                    setLoading(true);
+                }
                 try {
                     const [userProfile, whitelisted] = await Promise.all([
                         getUserProfile(user.wallet.address),
@@ -206,16 +216,14 @@ const WelcomeHeader = () => {
                 } catch (error) {
                     console.error("Failed to fetch user data", error);
                 } finally {
-                    setLoading(false);
+                    if (loading) {
+                        setLoading(false);
+                    }
                 }
-            } else if (user) {
-                // User object exists but wallet is not available yet, wait.
-            } else {
-                setLoading(false);
             }
         }
         fetchProfileAndWhitelistStatus();
-    }, [user]);
+    }, [user, loading]);
 
     if (loading) {
         return (
@@ -288,15 +296,115 @@ const WelcomeHeader = () => {
     )
 }
 
+const CooldownTimer = ({ unlockTime }: { unlockTime: number }) => {
+    const [timeLeft, setTimeLeft] = useState(unlockTime - Date.now());
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft(unlockTime - Date.now());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [unlockTime]);
+
+    if (timeLeft <= 0) return null;
+
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    return (
+        <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center text-center p-4 rounded-lg">
+            <Lock className="h-10 w-10 text-foreground mb-2" />
+            <p className="font-bold text-lg">Challenge Locked</p>
+            <p className="text-sm text-muted-foreground">Available again in:</p>
+            <p className="text-xl font-mono font-semibold">
+                {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </p>
+        </div>
+    );
+};
+
+const DifficultyCard = ({ level, lastAttemptTime }: { level: Difficulty; lastAttemptTime: number | null }) => {
+    const cooldownPeriod = 24 * 60 * 60 * 1000; // 24 hours
+    const now = Date.now();
+    
+    let isLocked = false;
+    let unlockTime = 0;
+
+    if (lastAttemptTime) {
+        unlockTime = lastAttemptTime + cooldownPeriod;
+        if (now < unlockTime) {
+            isLocked = true;
+        }
+    }
+    
+    const Wrapper = isLocked ? 'div' : Link;
+    
+    return (
+        <Wrapper href={isLocked ? '#' : level.href} className={cn(
+            "group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background block relative",
+            isLocked && "cursor-not-allowed opacity-50"
+        )}>
+            <Card className="h-full transform transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/20 group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:shadow-primary/20">
+                <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                        <level.icon className="h-10 w-10 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                        <CardTitle className="text-xl">{level.name}</CardTitle>
+                        <CardDescription>{level.description}</CardDescription>
+                    </div>
+                </CardHeader>
+            </Card>
+            {isLocked && <CooldownTimer unlockTime={unlockTime} />}
+        </Wrapper>
+    );
+};
+
 export default function HomePage() {
-  const { ready, authenticated, logout } = usePrivy();
+  const { ready, authenticated, logout, user } = usePrivy();
   const router = useRouter();
+  const [lastAttemptTimes, setLastAttemptTimes] = useState<Record<string, number | null>>({});
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
   useEffect(() => {
     if (ready && !authenticated) {
       router.push('/');
     }
   }, [ready, authenticated, router]);
+
+   useEffect(() => {
+        const fetchHistory = async () => {
+            if (user?.wallet?.address) {
+                setIsHistoryLoading(true);
+                try {
+                    const historyData = await getUserQuizHistory(user.wallet.address);
+                    if (historyData && historyData.data && historyData.data.history) {
+                        const newLastAttemptTimes: Record<string, number | null> = {};
+                        difficultyLevels.forEach(level => {
+                            const lastAttempt = historyData.data.history
+                                .filter((h: any) => h.difficulty.toLowerCase() === level.name.toLowerCase())
+                                .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+                            
+                            newLastAttemptTimes[level.name.toLowerCase()] = lastAttempt ? new Date(lastAttempt.createdAt).getTime() : null;
+                        });
+                        setLastAttemptTimes(newLastAttemptTimes);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch quiz history for cooldowns:", error);
+                } finally {
+                    setIsHistoryLoading(false);
+                }
+            } else {
+                setIsHistoryLoading(false);
+            }
+        };
+
+        if (ready && authenticated) {
+            fetchHistory();
+        }
+    }, [user, ready, authenticated]);
+
 
   if (!ready || !authenticated) {
      return (
@@ -363,22 +471,22 @@ export default function HomePage() {
                 {difficultyLevels.map((level, index) => (
                 <CarouselItem key={index} className="basis-4/5 sm:basis-1/2 lg:basis-1/3 pl-2 md:pl-4">
                     <div className="p-1">
-                        <Link 
-                            href={level.href} 
-                            className="group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background block"
-                        >
-                            <Card className="h-full transform transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/20 group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:shadow-primary/20">
+                        {isHistoryLoading ? (
+                             <Card className="h-full">
                                 <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
-                                <div className="bg-primary/10 p-3 rounded-full">
-                                    <level.icon className="h-10 w-10 text-primary" />
-                                </div>
-                                <div className="space-y-1">
-                                    <CardTitle className="text-xl">{level.name}</CardTitle>
-                                    <CardDescription>{level.description}</CardDescription>
-                                </div>
+                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-6 w-24" />
+                                        <Skeleton className="h-4 w-40" />
+                                    </div>
                                 </CardHeader>
-                            </Card>
-                        </Link>
+                             </Card>
+                        ) : (
+                           <DifficultyCard 
+                                level={level}
+                                lastAttemptTime={lastAttemptTimes[level.name.toLowerCase()]}
+                           />
+                        )}
                     </div>
                 </CarouselItem>
                 ))}
@@ -394,3 +502,5 @@ export default function HomePage() {
     </main>
   );
 }
+
+    
