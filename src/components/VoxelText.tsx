@@ -105,14 +105,16 @@ const VoxelText = ({ text }: { text: string }) => {
         let scene: THREE.Scene | null = new THREE.Scene();
         let renderer: THREE.WebGLRenderer | null = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 50, 0.1, 1000);
+        // Fixed: Increased height and adjusted aspect ratio
+        const containerHeight = 80;
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / containerHeight, 0.1, 1000);
         
-        renderer.setSize(container.clientWidth, 50);
+        renderer.setSize(container.clientWidth, containerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        const voxelSize = 0.8;
-        const letterSpacing = 1.0; 
+        const voxelSize = 0.5; // Reduced for better fit
+        const letterSpacing = 0.6; // Reduced spacing
         const depthLayers = 3;
 
         function createVoxelLetter(pattern: number[][]) {
@@ -163,10 +165,12 @@ const VoxelText = ({ text }: { text: string }) => {
             currentX += width + letterSpacing;
         });
 
-        textGroup.rotation.set(0, -0.3, 0); 
+        // Fixed: Adjusted rotation for better viewing angle
+        textGroup.rotation.set(-0.1, -0.25, 0); 
         scene.add(textGroup);
 
-        camera.position.set(0, 4, 15);
+        // Fixed: Pulled camera back and adjusted position
+        camera.position.set(0, 2, 12);
         camera.lookAt(0, 0, 0);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -181,9 +185,9 @@ const VoxelText = ({ text }: { text: string }) => {
         const handleResize = () => {
             if (!containerRef.current || !renderer || !scene || !camera) return;
             const width = containerRef.current.clientWidth;
-            camera.aspect = width / 50;
+            camera.aspect = width / containerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(width, 50);
+            renderer.setSize(width, containerHeight);
             renderer.render(scene, camera);
         };
 
@@ -213,7 +217,7 @@ const VoxelText = ({ text }: { text: string }) => {
     }, [text, materials]);
 
     return (
-        <div ref={containerRef} className="w-[300px] h-[50px] flex items-center justify-center" />
+        <div ref={containerRef} className="w-full h-[80px] flex items-center justify-center" />
     );
 };
 
