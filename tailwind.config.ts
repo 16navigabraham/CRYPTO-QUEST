@@ -12,6 +12,7 @@ export default {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
+        logo: ['Great Vibes', 'cursive'],
         code: ['monospace'],
       },
       colors: {
