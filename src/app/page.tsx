@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
-import { Star, LogIn, Loader2 } from 'lucide-react';
+import { LogIn, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Image from 'next/image';
@@ -18,8 +19,7 @@ import { FollowMePopup } from '@/components/FollowMePopup';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
-    <Star className="h-8 w-8 text-primary" />
-    <h1 className="text-3xl font-bold tracking-tight text-foreground">CryptoQuest</h1>
+    <h1 className="text-3xl font-bold tracking-tight text-foreground" style={{ textShadow: '2px 2px 0px hsl(var(--primary) / 0.5), 4px 4px 0px hsl(var(--primary) / 0.3), 6px 6px 0px hsl(var(--primary) / 0.1)'}}>CryptoQuest</h1>
   </div>
 );
 
