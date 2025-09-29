@@ -127,15 +127,15 @@ const VoxelText = ({ text }: { text: string }) => {
 
         const voxelSize = 0.8;
         const letterWidth = 5 * voxelSize;
-        const letterGap = 1.5 * voxelSize; // Space between letters
-        const totalWidth = (text.length * letterWidth) + ((text.length - 1) * letterGap);
-        const startOffset = -totalWidth / 2;
+        const letterGap = 1.5 * voxelSize;
+        const totalTextWidth = (text.length * letterWidth) + ((text.length - 1) * letterGap);
+        const startX = -totalTextWidth / 2;
 
-        camera.position.set(0, 4, 15);
-        camera.lookAt(0, 0, 0);
+        camera.position.set(totalTextWidth / 2.5, 4, 15);
+        camera.lookAt(totalTextWidth / 2.5, 0, 0);
         
         // Function to create voxel letter
-        function createVoxelLetter(pattern: number[][], offsetX: number) {
+        function createVoxelLetter(pattern: number[][]) {
             const group = new THREE.Group();
             const depthLayers = 4;
             const voxelGap = 1;
@@ -146,7 +146,7 @@ const VoxelText = ({ text }: { text: string }) => {
                         if (pattern[y][x] === 1) {
                             const geometry = new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize);
                             const cube = new THREE.Mesh(geometry, materials);
-                            cube.position.x = x * voxelGap + offsetX;
+                            cube.position.x = x * voxelGap;
                             cube.position.y = (pattern.length - y) * voxelGap - (pattern.length * voxelGap / 2) + 2;
                             cube.position.z = -z * voxelGap;
                             group.add(cube);
@@ -158,22 +158,19 @@ const VoxelText = ({ text }: { text: string }) => {
         }
 
         const textGroup = new THREE.Group();
-        let currentOffset = startOffset;
+        let currentX = startX;
         
         for (let i = 0; i < text.length; i++) {
             const char = text[i].toUpperCase();
             const pattern = letterPatterns[char];
             if (pattern) {
-                const letter = createVoxelLetter(pattern, 0); // Create letter at origin
-                letter.position.x = currentOffset; // Position the entire letter group
-                textGroup.add(letter);
-                currentOffset += (pattern[0].length * voxelSize) + letterGap; // Increment offset for next letter
+                const letterGroup = createVoxelLetter(pattern);
+                letterGroup.position.x = currentX;
+                textGroup.add(letterGroup);
+                currentX += (pattern[0].length * voxelSize) + letterGap;
             }
         }
         
-        // Center the whole group
-        textGroup.position.x -= (currentOffset - startOffset - letterGap) / 2 - startOffset;
-
         // Static rotation for a good 3D view
         textGroup.rotation.y = -0.3;
         textGroup.rotation.x = -0.1;
@@ -197,12 +194,12 @@ const VoxelText = ({ text }: { text: string }) => {
 
         // Handle resize
         const handleResize = () => {
-            if (!containerRef.current || !scene) return;
+            if (!containerRef.current || !scene || !rendererRef.current) return;
             const width = containerRef.current.clientWidth;
             camera.aspect = width / 50;
             camera.updateProjectionMatrix();
-            renderer.setSize(width, 50);
-            renderer.render(scene, camera); // Re-render on resize
+            rendererRef.current.setSize(width, 50);
+            rendererRef.current.render(scene, camera); // Re-render on resize
         };
         
         window.addEventListener('resize', handleResize);
