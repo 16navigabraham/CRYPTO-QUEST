@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef, useMemo } from 'react';
@@ -105,7 +106,6 @@ const VoxelText = ({ text }: { text: string }) => {
         let scene: THREE.Scene | null = new THREE.Scene();
         let renderer: THREE.WebGLRenderer | null = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         
-        // Fixed: Increased height and adjusted aspect ratio
         const containerHeight = 80;
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / containerHeight, 0.1, 1000);
         
@@ -113,8 +113,8 @@ const VoxelText = ({ text }: { text: string }) => {
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        const voxelSize = 0.5; // Reduced for better fit
-        const letterSpacing = 0.6; // Reduced spacing
+        const voxelSize = 0.5; 
+        const letterSpacing = 0.6; 
         const depthLayers = 3;
 
         function createVoxelLetter(pattern: number[][]) {
@@ -165,11 +165,9 @@ const VoxelText = ({ text }: { text: string }) => {
             currentX += width + letterSpacing;
         });
 
-        // Fixed: Adjusted rotation for better viewing angle
         textGroup.rotation.set(-0.1, -0.25, 0); 
         scene.add(textGroup);
 
-        // Fixed: Pulled camera back and adjusted position
         camera.position.set(0, 2, 12);
         camera.lookAt(0, 0, 0);
 
