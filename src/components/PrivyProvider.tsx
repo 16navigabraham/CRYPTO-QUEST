@@ -1,4 +1,3 @@
-
 'use client';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
@@ -11,14 +10,16 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
       config={{
         loginMethods: ['email'],
         appearance: {
+          showWalletLoginFirst: false,
           theme: 'light',
-          accentColor: '#00BFFF',
+          accentColor: '#10B981',
+          logo: '/cat.jpg',
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
         },
       }}
-      onSuccess={() => router.push('/profile/setup')}
+      onSuccess={() => router.push('/home')}
     >
       {children}
     </PrivyProvider>

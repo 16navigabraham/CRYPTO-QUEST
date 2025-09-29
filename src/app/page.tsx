@@ -5,7 +5,6 @@ import { usePrivy } from '@privy-io/react-auth';
 import { LogIn, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   Accordion,
@@ -16,10 +15,10 @@ import {
 import { FollowMePopup } from '@/components/FollowMePopup';
 
 const Logo = () => (
-  <div className="flex items-center justify-center gap-2">
-    <h1 className="font-logo text-5xl tracking-wider text-primary">CryptoQuest</h1>
-  </div>
-);
+    <div className="flex items-center justify-center gap-2">
+      <h1 className="font-logo text-5xl tracking-wider text-primary">CryptoQuest</h1>
+    </div>
+  );
 
 const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
@@ -72,7 +71,7 @@ export default function LandingPage() {
     }
   }, [ready, authenticated, router]);
 
-  const disabled = !ready || isNotifying || (ready && authenticated);
+  const disabled = !ready || (ready && authenticated);
 
   return (
     <main className="flex min-h-screen flex-col bg-background">
@@ -80,7 +79,7 @@ export default function LandingPage() {
       <header className="flex justify-between items-center p-4 sm:p-6">
         <Logo />
         <Button onClick={login} disabled={disabled} size="lg" className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform transition-all duration-300 hover:-translate-y-px">
-            {(isNotifying || (ready && authenticated)) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {(isNotifying || !ready)}
             <LogIn className="mr-2 h-4 w-4" />
             Login / Sign Up
         </Button>
@@ -108,14 +107,13 @@ export default function LandingPage() {
                 </div>
             </div>
             <div className="relative h-64 md:h-96">
-                 <Image
+                 <img
                     src="/cat.jpg"
                     alt="A heroic cartoon cat wearing glasses, ready for a coding quest."
                     width={1200}
                     height={675}
                     className="object-cover rounded-xl shadow-2xl"
                     data-ai-hint="cartoon cat"
-                    priority
                   />
             </div>
         </div>
