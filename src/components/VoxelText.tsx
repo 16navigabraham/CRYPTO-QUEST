@@ -138,7 +138,6 @@ const VoxelText = ({ text }: { text: string }) => {
 
         const textGroup = new THREE.Group();
         let currentX = 0;
-        let totalWidth = 0;
 
         const letters = text.toUpperCase().split('');
         const letterData = letters.map(char => {
@@ -148,12 +147,14 @@ const VoxelText = ({ text }: { text: string }) => {
              return { char, pattern, width };
         }).filter(Boolean) as { char: string, pattern: number[][], width: number }[];
 
-        letterData.forEach(({ width }) => {
-            totalWidth += width + letterSpacing;
+        let totalWidth = 0;
+        letterData.forEach(data => {
+            totalWidth += data.width + letterSpacing;
         });
         totalWidth -= letterSpacing;
-        
-        currentX = -totalWidth / 2;
+
+        let startOffset = -totalWidth / 2;
+        currentX = startOffset;
 
         letterData.forEach(({ pattern, width }) => {
             const letterGroup = createVoxelLetter(pattern);
@@ -162,7 +163,7 @@ const VoxelText = ({ text }: { text: string }) => {
             currentX += width + letterSpacing;
         });
 
-        textGroup.rotation.set(-0.2, -0.3, -0.1); 
+        textGroup.rotation.set(0, -0.3, 0); 
         scene.add(textGroup);
 
         camera.position.set(0, 4, 15);
