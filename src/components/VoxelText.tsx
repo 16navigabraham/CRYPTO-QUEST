@@ -145,11 +145,13 @@ const VoxelText = ({ text }: { text: string }) => {
              const pattern = letterPatterns[char];
              if (!pattern) return null;
              const width = (pattern[0]?.length || 0) * voxelSize;
-             totalWidth += width + letterSpacing;
              return { char, pattern, width };
         }).filter(Boolean) as { char: string, pattern: number[][], width: number }[];
 
-        totalWidth -= letterSpacing; // remove spacing after last letter
+        letterData.forEach(({ width }) => {
+            totalWidth += width + letterSpacing;
+        });
+        totalWidth -= letterSpacing;
         
         currentX = -totalWidth / 2;
 
