@@ -98,7 +98,7 @@ const letterPatterns: { [key: string]: number[][] } = {
 
 const VoxelText = ({ text }: { text: string }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const animationFrameRef = useRef<number | null>(null);
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
     const materials = useMemo(() => [
         new THREE.MeshPhongMaterial({ color: 0x00BFFF }), // right - deep sky blue
@@ -113,18 +113,17 @@ const VoxelText = ({ text }: { text: string }) => {
         if (!containerRef.current) return;
 
         const container = containerRef.current;
-
-        // Scene setup
-        const scene = new THREE.Scene();
+        let scene: THREE.Scene | null = new THREE.Scene();
 
         // Camera setup
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 20, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 50, 0.1, 1000);
         
         // Renderer setup
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, 50); // Fixed height
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
+        rendererRef.current = renderer;
 
         const voxelSize = 0.8;
         const letterGap = 6 * voxelSize;
@@ -132,7 +131,7 @@ const VoxelText = ({ text }: { text: string }) => {
         const startOffset = -totalWidth / 2;
 
         camera.position.set(totalWidth / 2 - 4, 4, 15);
-        camera.lookAt(totalWidth/2 - 4, 4, -2);
+        camera.lookAt(totalWidth/2 - 4, 0, -2);
         
         // Function to create voxel letter
         function createVoxelLetter(pattern: number[][], offsetX: number) {
@@ -168,8 +167,12 @@ const VoxelText = ({ text }: { text: string }) => {
                 currentOffset += letterGap;
             }
         }
+        
+        // Static rotation for a good 3D view
+        textGroup.rotation.y = -0.3;
+        textGroup.rotation.x = -0.1;
+        
         scene.add(textGroup);
-
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -182,23 +185,18 @@ const VoxelText = ({ text }: { text: string }) => {
         const directionalLight2 = new THREE.DirectionalLight(0x00BFFF, 0.4);
         directionalLight2.position.set(-5, 5, -5);
         scene.add(directionalLight2);
-
-        // Animation loop
-        function animate() {
-            animationFrameRef.current = requestAnimationFrame(animate);
-            textGroup.rotation.y += 0.005;
-            renderer.render(scene, camera);
-        }
-
-        animate();
+        
+        // Initial render
+        renderer.render(scene, camera);
 
         // Handle resize
         const handleResize = () => {
-            if (!containerRef.current) return;
+            if (!containerRef.current || !scene) return;
             const width = containerRef.current.clientWidth;
             camera.aspect = width / 50;
             camera.updateProjectionMatrix();
             renderer.setSize(width, 50);
+            renderer.render(scene, camera); // Re-render on resize
         };
         
         window.addEventListener('resize', handleResize);
@@ -206,23 +204,25 @@ const VoxelText = ({ text }: { text: string }) => {
         // Cleanup
         return () => {
             window.removeEventListener('resize', handleResize);
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
+            
+            if (rendererRef.current && container.contains(rendererRef.current.domElement)) {
+                container.removeChild(rendererRef.current.domElement);
             }
-            if (renderer.domElement && container) {
-                container.removeChild(renderer.domElement);
-            }
-            scene.traverse((object) => {
-                if (object instanceof THREE.Mesh) {
-                    object.geometry.dispose();
-                    if (Array.isArray(object.material)) {
-                        object.material.forEach(material => material.dispose());
-                    } else {
-                        object.material.dispose();
+            
+            if (scene) {
+                scene.traverse((object) => {
+                    if (object instanceof THREE.Mesh) {
+                        object.geometry.dispose();
+                        if (Array.isArray(object.material)) {
+                            object.material.forEach(material => material.dispose());
+                        } else {
+                            object.material.dispose();
+                        }
                     }
-                }
-            });
+                });
+            }
             renderer.dispose();
+            scene = null;
         };
     }, [text, materials]);
 
