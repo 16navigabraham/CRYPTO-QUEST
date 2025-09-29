@@ -423,7 +423,7 @@ export default function HomePage() {
       <div className="w-full max-w-5xl space-y-8">
         <header className="flex justify-between items-center w-full gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground" style={{ textShadow: '1px 1px 0px hsl(var(--primary)), 2px 2px 0px hsl(var(--primary)), 3px 3px 0px hsl(var(--primary)), 4px 4px 0px hsl(var(--primary))'}}>CryptoQuest</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground" style={{ textShadow: '1px 1px 0px hsl(var(--primary)), 2px 2px 0px hsl(var(--primary)), 3px 3px 0px hsl(var(--primary)), 4px 4px 0px hsl(var(--primary))' }}>CryptoQuest</h1>
             </div>
            <div className="flex items-center gap-1 sm:gap-2">
              <ThemeSwitcher />
