@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -16,11 +14,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { FollowMePopup } from '@/components/FollowMePopup';
-import VoxelText from '@/components/VoxelText';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
-    <VoxelText text="CryptoQuest" />
+    <h1 className="text-2xl font-bold tracking-tight">CryptoQuest</h1>
   </div>
 );
 

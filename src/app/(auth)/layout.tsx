@@ -1,10 +1,8 @@
 
 
-import VoxelText from "@/components/VoxelText";
-
 const Logo = () => (
   <div className="flex items-center justify-center gap-2 mb-8">
-    <VoxelText text="CryptoQuest" />
+    <h1 className="text-3xl font-bold tracking-tight">CryptoQuest</h1>
   </div>
 );
 
