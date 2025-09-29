@@ -140,24 +140,23 @@ const VoxelText = ({ text }: { text: string }) => {
         let currentX = 0;
         let totalWidth = 0;
 
-        const letterGroups = text.toUpperCase().split('').map(char => {
-            const pattern = letterPatterns[char];
-            if (pattern) {
-                const letterWidth = (pattern[0]?.length || 0) * voxelSize;
-                totalWidth += letterWidth + letterSpacing;
-                return { group: createVoxelLetter(pattern), width: letterWidth };
-            }
-            return null;
-        }).filter(Boolean) as { group: THREE.Group, width: number }[];
+        const letters = text.toUpperCase().split('');
+        const letterData = letters.map(char => {
+             const pattern = letterPatterns[char];
+             if (!pattern) return null;
+             const width = (pattern[0]?.length || 0) * voxelSize;
+             totalWidth += width + letterSpacing;
+             return { char, pattern, width };
+        }).filter(Boolean) as { char: string, pattern: number[][], width: number }[];
+
+        totalWidth -= letterSpacing; // remove spacing after last letter
         
-        totalWidth -= letterSpacing; // Remove last spacing
+        currentX = -totalWidth / 2;
 
-        const startX = -totalWidth / 2;
-        currentX = startX;
-
-        letterGroups.forEach(({ group, width }) => {
-            group.position.x = currentX;
-            textGroup.add(group);
+        letterData.forEach(({ pattern, width }) => {
+            const letterGroup = createVoxelLetter(pattern);
+            letterGroup.position.x = currentX + width / 2;
+            textGroup.add(letterGroup);
             currentX += width + letterSpacing;
         });
 
@@ -177,12 +176,12 @@ const VoxelText = ({ text }: { text: string }) => {
         renderer.render(scene, camera);
 
         const handleResize = () => {
-            if (!containerRef.current || !renderer) return;
+            if (!containerRef.current || !renderer || !scene || !camera) return;
             const width = containerRef.current.clientWidth;
             camera.aspect = width / 50;
             camera.updateProjectionMatrix();
             renderer.setSize(width, 50);
-            renderer.render(scene!, camera);
+            renderer.render(scene, camera);
         };
 
         window.addEventListener('resize', handleResize);
@@ -199,7 +198,7 @@ const VoxelText = ({ text }: { text: string }) => {
                     object.geometry.dispose();
                     if (Array.isArray(object.material)) {
                         object.material.forEach(material => material.dispose());
-                    } else {
+                    } else if (object.material instanceof THREE.Material) {
                         object.material.dispose();
                     }
                 }
