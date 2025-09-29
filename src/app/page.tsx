@@ -79,7 +79,7 @@ export default function LandingPage() {
       <FollowMePopup />
       <header className="flex justify-between items-center p-4 sm:p-6">
         <Logo />
-        <Button onClick={login} variant="outline" disabled={disabled}>
+        <Button onClick={login} disabled={disabled} size="lg" className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform transition-all duration-300 hover:-translate-y-px">
             {(isNotifying || (ready && authenticated)) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <LogIn className="mr-2 h-4 w-4" />
             Login / Sign Up
