@@ -71,7 +71,7 @@ export default function LandingPage() {
     }
   }, [ready, authenticated, router]);
 
-  const disabled = !ready || (ready && authenticated);
+  const disabled = !ready || isNotifying || (ready && authenticated);
 
   return (
     <main className="flex min-h-screen flex-col bg-background">
@@ -79,8 +79,7 @@ export default function LandingPage() {
       <header className="flex justify-between items-center p-4 sm:p-6">
         <Logo />
         <Button onClick={login} disabled={disabled} size="lg" className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform transition-all duration-300 hover:-translate-y-px">
-            {(isNotifying || !ready)}
-            <LogIn className="mr-2 h-4 w-4" />
+            {disabled ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
             Login / Sign Up
         </Button>
       </header>
