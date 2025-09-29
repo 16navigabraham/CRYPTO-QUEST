@@ -90,10 +90,10 @@ const VoxelText = ({ text }: { text: string }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     
     const materials = useMemo(() => [
-        new THREE.MeshPhongMaterial({ color: 0x00BFFF }), // right - deep sky blue
-        new THREE.MeshPhongMaterial({ color: 0x4682B4 }), // left - steel blue
-        new THREE.MeshPhongMaterial({ color: 0x87CEEB }), // top - sky blue
-        new THREE.MeshPhongMaterial({ color: 0x4169E1 }), // bottom - royal blue
+        new THREE.MeshPhongMaterial({ color: 0x00BFFF }), // right
+        new THREE.MeshPhongMaterial({ color: 0x4682B4 }), // left
+        new THREE.MeshPhongMaterial({ color: 0x87CEEB }), // top
+        new THREE.MeshPhongMaterial({ color: 0x4169E1 }), // bottom
         new THREE.MeshPhongMaterial({ color: 0x00BFFF }), // front
         new THREE.MeshPhongMaterial({ color: 0x4682B4 }), // back
     ], []);
@@ -102,8 +102,8 @@ const VoxelText = ({ text }: { text: string }) => {
         if (!containerRef.current || typeof window === 'undefined') return;
 
         const container = containerRef.current;
-        let scene: THREE.Scene | null = new THREE.Scene();
-        let renderer: THREE.WebGLRenderer | null = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const scene = new THREE.Scene();
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         
         const containerHeight = 80;
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / containerHeight, 0.1, 1000);
@@ -112,8 +112,8 @@ const VoxelText = ({ text }: { text: string }) => {
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        const voxelSize = 0.5; 
-        const letterSpacing = 0.6; 
+        const voxelSize = 0.5;
+        const letterSpacing = 0.6;
         const depthLayers = 3;
 
         function createVoxelLetter(pattern: number[][]) {
@@ -140,23 +140,21 @@ const VoxelText = ({ text }: { text: string }) => {
         const textGroup = new THREE.Group();
         let currentX = 0;
 
-        const letters = text.toUpperCase().split('');
-        const letterData = letters.map(char => {
-             const pattern = letterPatterns[char];
-             if (!pattern) return null;
-             const width = (pattern[0]?.length || 0) * voxelSize;
-             return { char, pattern, width };
-        }).filter((item): item is { char: string; pattern: number[][]; width: number } => item !== null);
+        const letterData = text.toUpperCase().split('').map(char => {
+            const pattern = letterPatterns[char];
+            if (!pattern) return null;
+            const width = (pattern[0]?.length || 0) * voxelSize;
+            return { pattern, width };
+        }).filter(item => item !== null) as { pattern: number[][], width: number }[];
 
 
         let totalWidth = 0;
         letterData.forEach(data => {
-            totalWidth += data.width + letterSpacing;
+            totalWidth += data.width;
         });
-        totalWidth -= letterSpacing;
+        totalWidth += (letterData.length - 1) * letterSpacing;
 
-        let startOffset = -totalWidth / 2;
-        currentX = startOffset;
+        currentX = -totalWidth / 2;
 
         letterData.forEach(({ pattern, width }) => {
             const letterGroup = createVoxelLetter(pattern);
@@ -165,11 +163,11 @@ const VoxelText = ({ text }: { text: string }) => {
             currentX += width + letterSpacing;
         });
 
-        textGroup.rotation.set(-0.1, -0.25, 0); 
         scene.add(textGroup);
-
-        camera.position.set(0, 2, 12);
-        camera.lookAt(0, 0, 0);
+        textGroup.rotation.set(0, 0, 0); 
+        
+        camera.position.set(0, 0, 12);
+        camera.lookAt(scene.position);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
@@ -181,7 +179,7 @@ const VoxelText = ({ text }: { text: string }) => {
         renderer.render(scene, camera);
 
         const handleResize = () => {
-            if (!containerRef.current || !renderer || !scene || !camera) return;
+            if (!containerRef.current || !renderer || !camera) return;
             const width = containerRef.current.clientWidth;
             camera.aspect = width / containerHeight;
             camera.updateProjectionMatrix();
@@ -191,14 +189,23 @@ const VoxelText = ({ text }: { text: string }) => {
 
         window.addEventListener('resize', handleResize);
 
+        let animationFrameId: number;
+        const animate = () => {
+            animationFrameId = requestAnimationFrame(animate);
+            // Re-render if needed for dynamic scenes, but we are static
+             // renderer.render(scene, camera);
+        };
+        // animate();
+
         return () => {
+            cancelAnimationFrame(animationFrameId);
             window.removeEventListener('resize', handleResize);
 
             if (renderer && container.contains(renderer.domElement)) {
                 container.removeChild(renderer.domElement);
             }
             
-            scene?.traverse(object => {
+            scene.traverse(object => {
                 if (object instanceof THREE.Mesh) {
                     object.geometry.dispose();
                     if (Array.isArray(object.material)) {
@@ -208,9 +215,7 @@ const VoxelText = ({ text }: { text: string }) => {
                     }
                 }
             });
-            renderer?.dispose();
-            scene = null;
-            renderer = null;
+            renderer.dispose();
         };
     }, [text, materials]);
 
