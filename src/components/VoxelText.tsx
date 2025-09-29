@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useMemo } from 'react';
@@ -147,7 +146,8 @@ const VoxelText = ({ text }: { text: string }) => {
              if (!pattern) return null;
              const width = (pattern[0]?.length || 0) * voxelSize;
              return { char, pattern, width };
-        }).filter(Boolean) as { char: string, pattern: number[][], width: number }[];
+        }).filter((item): item is { char: string; pattern: number[][]; width: number } => item !== null);
+
 
         let totalWidth = 0;
         letterData.forEach(data => {
