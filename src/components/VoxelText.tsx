@@ -126,12 +126,13 @@ const VoxelText = ({ text }: { text: string }) => {
         rendererRef.current = renderer;
 
         const voxelSize = 0.8;
-        const letterGap = 6 * voxelSize;
-        const totalWidth = (text.length * 5 * voxelSize) + ((text.length - 1) * letterGap);
+        const letterWidth = 5 * voxelSize;
+        const letterGap = 1.5 * voxelSize; // Space between letters
+        const totalWidth = (text.length * letterWidth) + ((text.length - 1) * letterGap);
         const startOffset = -totalWidth / 2;
 
-        camera.position.set(totalWidth / 2 - 4, 4, 15);
-        camera.lookAt(totalWidth/2 - 4, 0, -2);
+        camera.position.set(0, 4, 15);
+        camera.lookAt(0, 0, 0);
         
         // Function to create voxel letter
         function createVoxelLetter(pattern: number[][], offsetX: number) {
@@ -158,16 +159,21 @@ const VoxelText = ({ text }: { text: string }) => {
 
         const textGroup = new THREE.Group();
         let currentOffset = startOffset;
+        
         for (let i = 0; i < text.length; i++) {
             const char = text[i].toUpperCase();
             const pattern = letterPatterns[char];
             if (pattern) {
-                const letter = createVoxelLetter(pattern, currentOffset);
+                const letter = createVoxelLetter(pattern, 0); // Create letter at origin
+                letter.position.x = currentOffset; // Position the entire letter group
                 textGroup.add(letter);
-                currentOffset += letterGap;
+                currentOffset += (pattern[0].length * voxelSize) + letterGap; // Increment offset for next letter
             }
         }
         
+        // Center the whole group
+        textGroup.position.x -= (currentOffset - startOffset - letterGap) / 2 - startOffset;
+
         // Static rotation for a good 3D view
         textGroup.rotation.y = -0.3;
         textGroup.rotation.x = -0.1;
