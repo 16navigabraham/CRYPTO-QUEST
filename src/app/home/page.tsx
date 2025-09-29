@@ -421,7 +421,7 @@ export default function HomePage() {
       <div className="w-full max-w-5xl space-y-8">
         <header className="flex justify-between items-center w-full gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-                <h1 className="font-logo text-5xl">CryptoQuest</h1>
+                <h1 className="font-logo text-4xl tracking-wider text-primary">CryptoQuest</h1>
             </div>
            <div className="flex items-center gap-1 sm:gap-2">
              <ThemeSwitcher />

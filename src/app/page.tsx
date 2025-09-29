@@ -17,7 +17,7 @@ import { FollowMePopup } from '@/components/FollowMePopup';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
-    <h1 className="font-logo text-6xl">CryptoQuest</h1>
+    <h1 className="font-logo text-5xl tracking-wider text-primary">CryptoQuest</h1>
   </div>
 );
 
