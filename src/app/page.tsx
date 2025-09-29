@@ -16,10 +16,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { FollowMePopup } from '@/components/FollowMePopup';
+import VoxelText from '@/components/VoxelText';
 
 const Logo = () => (
   <div className="flex items-center justify-center gap-2">
-    <h1 className="text-3xl font-bold tracking-tight text-foreground" style={{ textShadow: '1px 1px 0px hsl(var(--primary)), 2px 2px 0px hsl(var(--primary)), 3px 3px 0px hsl(var(--primary)), 4px 4px 0px hsl(var(--primary))' }}>CryptoQuest</h1>
+    <VoxelText text="CryptoQuest" />
   </div>
 );
 
@@ -185,6 +186,3 @@ export default function LandingPage() {
     </main>
   );
 }
-
-
-    
