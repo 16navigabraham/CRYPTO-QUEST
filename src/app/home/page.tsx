@@ -547,7 +547,7 @@ export default function HomePage() {
             style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', animationDelay: '0.3s', opacity: 0 }}
         >
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Choose Your Challenge</h2>
-            <p className="text-muted-foreground text-md sm:text-lg max-w-2xl mx-auto mt-2">
+            <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto mt-2">
                 Test your crypto development knowledge across various topics and difficulty levels.
             </p>
         </div>
