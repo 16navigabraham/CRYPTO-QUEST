@@ -415,11 +415,10 @@ export default function HomePage() {
   }
   
   return (
-    <main className="relative flex min-h-screen flex-col items-center bg-background p-4 sm:p-6 md:p-8">
+    <main className="relative flex min-h-screen flex-col items-center bg-background">
       <FollowMePopup />
       <FloatingSymbols />
-      <div className="w-full max-w-5xl space-y-8">
-        <header className="flex justify-between items-center w-full gap-2 sm:gap-4">
+      <header className="sticky top-0 z-50 flex h-[72px] w-full items-center justify-between gap-2 bg-slate-900/85 px-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-lg sm:gap-4 sm:px-6 md:px-8 border-b border-cyan-400/20">
             <div className="flex items-center gap-2">
                 <h1 className="font-logo text-4xl tracking-wider text-primary">CryptoQuest</h1>
             </div>
@@ -443,6 +442,8 @@ export default function HomePage() {
             </Button>
           </div>
         </header>
+
+      <div className="w-full max-w-5xl space-y-8 p-4 sm:p-6 md:p-8">
 
         <WelcomeHeader />
         
