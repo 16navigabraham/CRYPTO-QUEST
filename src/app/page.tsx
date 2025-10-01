@@ -192,7 +192,10 @@ export default function LandingPage() {
       </section>
 
       <section id="features" className="py-16 sm:py-24 bg-muted/50">
-          <div className="container mx-auto px-4">
+        <div 
+          className="container mx-auto px-4"
+          style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', opacity: 0, animationDelay: '0.2s' }}
+        >
               <div className="text-center space-y-3 mb-12">
                    <h3 className="text-3xl sm:text-4xl font-bold">Why CryptoQuest?</h3>
                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">An engaging and effective way to level up your developer skills.</p>
@@ -214,7 +217,10 @@ export default function LandingPage() {
       </section>
 
       <section id="faq" className="py-16 sm:py-24">
-        <div className="container mx-auto px-4">
+        <div 
+            className="container mx-auto px-4"
+            style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', opacity: 0, animationDelay: '0.2s' }}
+        >
             <div className="text-center space-y-3 mb-12">
                 <h3 className="text-3xl sm:text-4xl font-bold">Frequently Asked Questions</h3>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
