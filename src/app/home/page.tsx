@@ -425,22 +425,52 @@ export default function HomePage() {
             </div>
            <div className="flex items-center gap-1 sm:gap-2">
              <ThemeSwitcher />
-             <Button onClick={() => router.push('/profile/setup')} variant="outline" size="sm" className="p-2 sm:px-3">
-                <UserIcon className="h-4 w-4" /> 
-                <span className="hidden sm:inline ml-2">Profile</span>
-            </Button>
-             <Button onClick={() => router.push('/wallet')} variant="outline" size="sm" className="p-2 sm:px-3">
-                <Wallet className="h-4 w-4" /> 
-                <span className="hidden sm:inline ml-2">Wallet</span>
-            </Button>
-            <Button onClick={() => router.push('/leaderboard')} variant="outline" size="sm" className="p-2 sm:px-3">
-                <BarChart3 className="h-4 w-4" /> 
-                <span className="hidden sm:inline ml-2">Board</span>
-            </Button>
-            <Button onClick={logout} variant="outline" size="sm" className="p-2 sm:px-3">
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">Logout</span>
-            </Button>
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => router.push('/profile/setup')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                            <UserIcon className="h-5 w-5" /> 
+                            <span className="sr-only">Profile</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Profile</p>
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => router.push('/wallet')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                            <Wallet className="h-5 w-5" /> 
+                            <span className="sr-only">Wallet</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Wallet</p>
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={() => router.push('/leaderboard')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                            <BarChart3 className="h-5 w-5" /> 
+                            <span className="sr-only">Leaderboard</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Leaderboard</p>
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button onClick={logout} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                          <LogOut className="h-5 w-5" />
+                          <span className="sr-only">Logout</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Logout</p>
+                    </TooltipContent>
+                </Tooltip>
+             </TooltipProvider>
           </div>
         </header>
 
@@ -502,5 +532,3 @@ export default function HomePage() {
     </main>
   );
 }
-
-    
