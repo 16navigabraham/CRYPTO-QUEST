@@ -538,7 +538,7 @@ export default function HomePage() {
         </div>
 
         <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Choose Your Challenge</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Choose Your Challenge</h2>
             <p className="text-muted-foreground text-md sm:text-lg max-w-2xl mx-auto mt-2">
                 Test your crypto development knowledge across various topics and difficulty levels.
             </p>
