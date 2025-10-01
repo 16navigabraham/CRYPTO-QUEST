@@ -13,6 +13,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { FollowMePopup } from '@/components/FollowMePopup';
+import { cn } from '@/lib/utils';
 
 const Logo = () => (
     <div className="flex items-center justify-center gap-2">
@@ -181,11 +182,21 @@ export default function LandingPage() {
                 </p>
             </div>
             <div className="max-w-3xl mx-auto">
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full space-y-4">
                     {faqs.map((faq, index) => (
-                        <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
-                            <AccordionContent className="text-base text-muted-foreground">
+                        <AccordionItem 
+                            value={`item-${index}`} 
+                            key={index}
+                            className={cn(
+                                "bg-muted/30 rounded-lg border border-border/50 transition-all duration-300",
+                                "hover:border-primary/50 hover:bg-muted/50",
+                                "data-[state=open]:border-primary/50 data-[state=open]:bg-muted/50 data-[state=open]:shadow-lg data-[state=open]:shadow-primary/10"
+                            )}
+                        >
+                            <AccordionTrigger className="text-lg font-semibold px-6 hover:no-underline">
+                                {faq.question}
+                            </AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground px-6">
                                 {faq.answer}
                             </AccordionContent>
                         </AccordionItem>
