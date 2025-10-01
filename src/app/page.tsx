@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
-import { LogIn, Loader2, Gamepad2, TrendingUp, Trophy } from 'lucide-react';
+import { LogIn, Loader2, Gamepad2, TrendingUp, Trophy, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -148,7 +148,7 @@ export default function LandingPage() {
       <header className="flex justify-between items-center p-4 sm:p-6">
         <Logo />
         <Button onClick={login} disabled={disabled} size="lg" className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transform transition-all duration-300 hover:-translate-y-px">
-            {disabled ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
+            {disabled ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}
             Login / Sign Up
         </Button>
       </header>
