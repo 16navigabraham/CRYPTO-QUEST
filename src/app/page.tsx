@@ -124,7 +124,8 @@ export default function LandingPage() {
                     alt="A heroic cartoon cat wearing glasses, ready for a coding quest."
                     width={1200}
                     height={675}
-                    className="object-cover rounded-xl shadow-2xl"
+                    className="object-cover rounded-3xl shadow-2xl shadow-primary/20 animate-float"
+                    style={{animationDuration: '10s'}}
                     data-ai-hint="cartoon cat"
                   />
             </div>
