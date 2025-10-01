@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
-import { LogIn, Loader2 } from 'lucide-react';
+import { LogIn, Loader2, Gamepad2, TrendingUp, Trophy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
@@ -73,6 +73,24 @@ const AnimatedHeroBackground = () => {
     );
 };
 
+const features = [
+    {
+        icon: Gamepad2,
+        title: "Gamified Learning",
+        description: "Interactive quizzes across various topics make learning enjoyable and effective."
+    },
+    {
+        icon: TrendingUp,
+        title: "Progressive Difficulty",
+        description: "From beginner to master, our tiered system grows with you."
+    },
+    {
+        icon: Trophy,
+        title: "Track Your Growth",
+        description: "See your scores, track progress, and climb the leaderboards."
+    }
+]
+
 export default function LandingPage() {
   const { ready, authenticated, login, isNotifying } = usePrivy();
   const router = useRouter();
@@ -139,18 +157,17 @@ export default function LandingPage() {
                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">An engaging and effective way to level up your developer skills.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="text-center p-6 bg-card rounded-xl shadow-sm">
-                      <h4 className="text-xl font-semibold mb-2">Gamified Learning</h4>
-                      <p className="text-muted-foreground">Interactive quizzes across various topics make learning enjoyable and effective.</p>
-                  </div>
-                  <div className="text-center p-6 bg-card rounded-xl shadow-sm">
-                      <h4 className="text-xl font-semibold mb-2">Progressive Difficulty</h4>
-                      <p className="text-muted-foreground">From beginner to master, our tiered system grows with you.</p>
-                  </div>
-                   <div className="text-center p-6 bg-card rounded-xl shadow-sm">
-                      <h4 className="text-xl font-semibold mb-2">Track Your Growth</h4>
-                      <p className="text-muted-foreground">See your scores, track progress, and climb the leaderboards.</p>
-                  </div>
+                  {features.map((feature, index) => (
+                    <div key={index} className="group text-center p-6 bg-card rounded-xl shadow-sm border border-transparent hover:border-primary/50 hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300">
+                        <div className="flex justify-center mb-4">
+                            <div className="p-4 rounded-full bg-primary/10">
+                                <feature.icon className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
+                            </div>
+                        </div>
+                        <h4 className="text-xl font-semibold mb-2">{feature.title}</h4>
+                        <p className="text-muted-foreground">{feature.description}</p>
+                    </div>
+                  ))}
               </div>
           </div>
       </section>
