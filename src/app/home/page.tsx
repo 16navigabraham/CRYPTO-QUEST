@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -420,7 +421,7 @@ export default function HomePage() {
       <FloatingSymbols />
       <header className="sticky top-0 z-50 flex h-[72px] w-full items-center justify-between gap-2 bg-slate-900/85 px-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-lg sm:gap-4 sm:px-6 md:px-8 border-b border-cyan-400/20">
             <div className="flex items-center gap-2">
-                <h1 className="font-logo text-4xl tracking-wider text-primary">CryptoQuest</h1>
+                <h1 className="font-logo text-4xl tracking-wider bg-gradient-to-br from-cyan-500 to-blue-500 bg-clip-text text-transparent transition-transform duration-300 ease-in-out hover:scale-105 hover:[filter:drop-shadow(0_0_8px_rgba(6,182,212,0.6))]">CryptoQuest</h1>
             </div>
            <div className="flex items-center gap-1 sm:gap-2">
              <ThemeSwitcher />
@@ -501,3 +502,5 @@ export default function HomePage() {
     </main>
   );
 }
+
+    
