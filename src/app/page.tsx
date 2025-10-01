@@ -101,10 +101,10 @@ export default function LandingPage() {
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6 text-left">
                 <div className="min-h-[100px] sm:min-h-[120px] flex flex-col justify-center">
-                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                    <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
                       Master Web3 Development,
                     </h2>
-                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-primary">
+                    <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary">
                       One Quest at a Time.
                     </h2>
                 </div>
