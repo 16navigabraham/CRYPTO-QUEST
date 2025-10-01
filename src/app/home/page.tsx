@@ -516,7 +516,7 @@ export default function HomePage() {
              <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button onClick={() => router.push('/profile/setup')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                        <Button onClick={() => router.push('/profile/setup')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110 active:scale-95">
                             <UserIcon className="h-5 w-5" /> 
                             <span className="sr-only">Profile</span>
                         </Button>
@@ -527,7 +527,7 @@ export default function HomePage() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button onClick={() => router.push('/wallet')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                        <Button onClick={() => router.push('/wallet')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110 active:scale-95">
                             <Wallet className="h-5 w-5" /> 
                             <span className="sr-only">Wallet</span>
                         </Button>
@@ -538,7 +538,7 @@ export default function HomePage() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button onClick={() => router.push('/leaderboard')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                        <Button onClick={() => router.push('/leaderboard')} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110 active:scale-95">
                             <BarChart3 className="h-5 w-5" /> 
                             <span className="sr-only">Leaderboard</span>
                         </Button>
@@ -549,7 +549,7 @@ export default function HomePage() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button onClick={logout} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110">
+                        <Button onClick={logout} variant="ghost" size="icon" className="text-muted-foreground hover:text-cyan-400 hover:bg-cyan-400/10 transition-all duration-200 hover:scale-110 active:scale-95">
                           <LogOut className="h-5 w-5" />
                           <span className="sr-only">Logout</span>
                         </Button>
