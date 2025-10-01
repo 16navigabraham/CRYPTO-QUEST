@@ -230,17 +230,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-       <footer className="text-center p-6 bg-background">
-          <div className="flex justify-center items-center gap-4">
-            <p className="text-sm text-muted-foreground">Sharpen your skills. Earn rewards. Become a legend.</p>
-             <a href="https://x.com/AbrahamNAVIG1" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <XIcon className="h-5 w-5" />
-                <span className="sr-only">X/Twitter Profile</span>
-            </a>
-             <a href="https://farcaster.xyz/abrahamnavig" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <FarcasterIcon className="h-5 w-5" />
-                <span className="sr-only">Farcaster Profile</span>
-            </a>
+       <footer className="p-6 bg-muted/30 border-t border-primary/20">
+          <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground text-center sm:text-left">Sharpen your skills. Earn rewards. Become a legend.</p>
+             <div className="flex items-center gap-4">
+                <a href="https://x.com/AbrahamNAVIG1" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors duration-300">
+                    <XIcon className="h-5 w-5" />
+                    <span className="sr-only">X/Twitter Profile</span>
+                </a>
+                <a href="https://farcaster.xyz/abrahamnavig" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors duration-300">
+                    <FarcasterIcon className="h-5 w-5" />
+                    <span className="sr-only">Farcaster Profile</span>
+                </a>
+             </div>
           </div>
         </footer>
     </main>
