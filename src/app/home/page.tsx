@@ -8,7 +8,7 @@ import type { SVGProps } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getContractRewardPool, getUserProfile, getTotalRewardsDistributed, isUserWhitelisted, getUserQuizHistory } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -89,6 +89,50 @@ const FloatingSymbols = () => (
     </div>
 );
 
+const AnimatedNumber = ({ value, className }: { value: number; className?: string }) => {
+    const [currentValue, setCurrentValue] = useState(0);
+    const targetValue = value;
+    const animationFrameId = useRef<number | null>(null);
+
+    useEffect(() => {
+        const start = performance.now();
+        const duration = 1500; // Animation duration in ms
+
+        const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+
+            const nextValue = easedProgress * targetValue;
+            setCurrentValue(nextValue);
+
+            if (progress < 1) {
+                animationFrameId.current = requestAnimationFrame(animate);
+            } else {
+                setCurrentValue(targetValue);
+            }
+        };
+
+        animationFrameId.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+            }
+        };
+    }, [targetValue]);
+
+    return (
+        <span className={className}>
+            {currentValue.toLocaleString('en-US', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2,
+            })}
+        </span>
+    );
+};
+
+
 const RewardPool = () => {
     const [rewardPool, setRewardPool] = useState<{ balance: string; symbol: string } | null>(null);
     const [loading, setLoading] = useState(true);
@@ -124,7 +168,11 @@ const RewardPool = () => {
                 ) : (
                     <>
                         <div className="text-2xl font-bold">
-                             {rewardPool ? parseFloat(rewardPool.balance).toLocaleString('en-US', {maximumFractionDigits: 2}) : '0'}
+                            {rewardPool ? (
+                                <AnimatedNumber value={parseFloat(rewardPool.balance)} />
+                            ) : (
+                                '0.00'
+                            )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {rewardPool?.symbol} available for skilled players
@@ -171,7 +219,11 @@ const TotalRewardsDistributed = () => {
                 ) : (
                     <>
                         <div className="text-2xl font-bold">
-                            {distributed ? parseFloat(distributed.balance).toLocaleString('en-US', {maximumFractionDigits: 2}) : '0'}
+                             {distributed ? (
+                                <AnimatedNumber value={parseFloat(distributed.balance)} />
+                            ) : (
+                                '0.00'
+                            )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {distributed?.symbol} claimed by users
