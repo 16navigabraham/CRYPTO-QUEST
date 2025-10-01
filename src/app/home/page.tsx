@@ -250,7 +250,7 @@ const WelcomeHeader = () => {
             <CardContent className="p-4 sm:p-6">
                 <div className="flex justify-between items-start gap-4">
                     <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-primary">
+                        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-4 border-primary">
                             <AvatarImage src={profile.profilePictureUrl || undefined} />
                             <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
@@ -288,7 +288,9 @@ const WelcomeHeader = () => {
                     </div>
                      <div className="text-right flex-shrink-0">
                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total Score</p>
-                        <p className="text-2xl sm:text-3xl font-bold text-primary">{profile.totalScore || 0}</p>
+                        <p className="text-5xl sm:text-6xl font-bold bg-gradient-to-br from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                            {profile.totalScore || 0}
+                        </p>
                     </div>
                 </div>
             </CardContent>
@@ -421,7 +423,7 @@ export default function HomePage() {
       <FloatingSymbols />
       <header className="sticky top-0 z-50 flex h-[72px] w-full items-center justify-between gap-2 bg-slate-900/85 px-4 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-lg sm:gap-4 sm:px-6 md:px-8 border-b border-cyan-400/20">
             <div className="flex items-center gap-2">
-                <h1 className="font-logo text-4xl tracking-wider bg-gradient-to-br from-cyan-500 to-blue-500 bg-clip-text text-transparent transition-transform duration-300 ease-in-out hover:scale-105 hover:[filter:drop-shadow(0_0_8px_rgba(6,182,212,0.6))]">CryptoQuest</h1>
+                <h1 className="font-logo text-4xl tracking-wider bg-gradient-to-br from-cyan-400 to-blue-500 bg-clip-text text-transparent transition-transform duration-300 ease-in-out hover:scale-105 hover:[filter:drop-shadow(0_0_8px_rgba(6,182,212,0.6))]">CryptoQuest</h1>
             </div>
            <div className="flex items-center gap-1 sm:gap-2">
              <ThemeSwitcher />
