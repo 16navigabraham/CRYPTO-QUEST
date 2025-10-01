@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { LogIn, Loader2, Gamepad2, TrendingUp, Trophy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Accordion,
@@ -14,6 +14,29 @@ import {
 } from "@/components/ui/accordion"
 import { FollowMePopup } from '@/components/FollowMePopup';
 import { cn } from '@/lib/utils';
+
+const ScrollProgressBar = () => {
+    const [width, setWidth] = useState(0);
+
+    const handleScroll = () => {
+        const scrollY = window.scrollY;
+        const scrollHeight = document.body.scrollHeight - window.innerHeight;
+        const scrollPercentage = (scrollY / scrollHeight) * 100;
+        setWidth(scrollPercentage);
+    };
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    return (
+        <div 
+            className="fixed top-0 left-0 z-50 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 shadow-[0_0_10px_rgba(6,182,212,0.6)]"
+            style={{ width: `${width}%` }}
+        />
+    );
+};
 
 const Logo = () => (
     <div className="flex items-center justify-center gap-2">
@@ -106,6 +129,7 @@ export default function LandingPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col bg-background">
+      <ScrollProgressBar />
       <AnimatedHeroBackground />
       <FollowMePopup />
       <header className="flex justify-between items-center p-4 sm:p-6">
