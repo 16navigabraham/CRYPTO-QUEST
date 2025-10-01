@@ -154,7 +154,7 @@ const RewardPool = () => {
     }, []);
 
     return (
-        <Card className="bg-primary/10 border-primary/20">
+        <Card className="bg-secondary/10 border-secondary/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Reward Pool</CardTitle>
                 <Gift className="h-5 w-5 text-primary" />
@@ -205,7 +205,7 @@ const TotalRewardsDistributed = () => {
     }, []);
 
     return (
-        <Card className="bg-secondary/10 border-secondary/20">
+        <Card className="bg-primary/10 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Rewards Distributed</CardTitle>
                 <HandCoins className="h-5 w-5 text-secondary" />
@@ -530,54 +530,64 @@ export default function HomePage() {
 
       <div className="w-full max-w-5xl space-y-8 p-4 sm:p-6 md:p-8">
 
-        <WelcomeHeader />
+        <div style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', animationDelay: '0.1s', opacity: 0 }}>
+            <WelcomeHeader />
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', animationDelay: '0.2s', opacity: 0 }}
+        >
           <RewardPool />
           <TotalRewardsDistributed />
         </div>
 
-        <div className="text-center">
+        <div 
+            className="text-center"
+            style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', animationDelay: '0.3s', opacity: 0 }}
+        >
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Choose Your Challenge</h2>
             <p className="text-muted-foreground text-md sm:text-lg max-w-2xl mx-auto mt-2">
                 Test your crypto development knowledge across various topics and difficulty levels.
             </p>
         </div>
         
-        <Carousel
-            opts={{
-                align: "start",
-                loop: false,
-            }}
-            className="w-full"
-            >
-            <CarouselContent className="-ml-2 md:-ml-4">
-                {difficultyLevels.map((level, index) => (
-                <CarouselItem key={index} className="basis-4/5 sm:basis-1/2 lg:basis-1/3 pl-2 md:pl-4">
-                    <div className="p-1">
-                        {isHistoryLoading ? (
-                             <Card className="h-full">
-                                <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
-                                    <Skeleton className="h-10 w-10 rounded-full" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-6 w-24" />
-                                        <Skeleton className="h-4 w-40" />
-                                    </div>
-                                </CardHeader>
-                             </Card>
-                        ) : (
-                           <DifficultyCard 
-                                level={level}
-                                lastAttemptTime={lastAttemptTimes[level.name.toLowerCase()]}
-                           />
-                        )}
-                    </div>
-                </CarouselItem>
-                ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-        </Carousel>
+        <div style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', animationDelay: '0.4s', opacity: 0 }}>
+            <Carousel
+                opts={{
+                    align: "start",
+                    loop: false,
+                }}
+                className="w-full"
+                >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                    {difficultyLevels.map((level, index) => (
+                    <CarouselItem key={index} className="basis-4/5 sm:basis-1/2 lg:basis-1/3 pl-2 md:pl-4">
+                        <div className="p-1">
+                            {isHistoryLoading ? (
+                                <Card className="h-full">
+                                    <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
+                                        <Skeleton className="h-10 w-10 rounded-full" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-6 w-24" />
+                                            <Skeleton className="h-4 w-40" />
+                                        </div>
+                                    </CardHeader>
+                                </Card>
+                            ) : (
+                            <DifficultyCard 
+                                    level={level}
+                                    lastAttemptTime={lastAttemptTimes[level.name.toLowerCase()]}
+                            />
+                            )}
+                        </div>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+            </Carousel>
+        </div>
         
         <footer className="text-center text-sm text-muted-foreground pt-4">
           <p>Sharpen your skills. Earn rewards. Become a legend.</p>
