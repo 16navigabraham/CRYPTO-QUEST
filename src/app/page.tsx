@@ -85,9 +85,12 @@ const faqs = [
     }
 ]
 
-const AnimatedHeroBackground = () => {
+const AnimatedHeroBackground = ({ scrollY }: { scrollY: number }) => {
     return (
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+      <div 
+        className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10"
+        style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+      >
         <div className="absolute inset-0 bg-background">
           <div
             className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(0,191,255,0.3),rgba(255,255,255,0))]"
@@ -118,6 +121,7 @@ const features = [
 export default function LandingPage() {
   const { ready, authenticated, login, isNotifying } = usePrivy();
   const router = useRouter();
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     if (ready && authenticated) {
@@ -125,12 +129,21 @@ export default function LandingPage() {
     }
   }, [ready, authenticated, router]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const disabled = !ready || isNotifying || (ready && authenticated);
 
   return (
     <main className="relative flex min-h-screen flex-col bg-background">
       <ScrollProgressBar />
-      <AnimatedHeroBackground />
+      <AnimatedHeroBackground scrollY={scrollY} />
       <FollowMePopup />
       <header className="flex justify-between items-center p-4 sm:p-6">
         <Logo />
@@ -161,7 +174,10 @@ export default function LandingPage() {
                     </Button>
                 </div>
             </div>
-            <div className="relative h-64 md:h-96">
+            <div 
+              className="relative h-64 md:h-96"
+              style={{ transform: `translateY(${scrollY * -0.2}px)` }}
+            >
                  <img
                     src="/cat.jpg"
                     alt="A heroic cartoon cat wearing glasses, ready for a coding quest."
