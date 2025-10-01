@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Feather, Flame, Swords, BrainCircuit, Trophy, Star, LogOut, Loader2, BarChart3, Wallet, Gift, User as UserIcon, Bitcoin, Sparkles, HandCoins, ShieldCheck, ShieldOff, Lock } from 'lucide-react';
-import type { SVGProps } from 'react';
+import type { SVGProps, MouseEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
@@ -385,6 +385,9 @@ const DifficultyCard = ({ level, lastAttemptTime }: { level: Difficulty; lastAtt
     let isLocked = false;
     let unlockTime = 0;
 
+    const [rotation, setRotation] = useState({ x: 0, y: 0 });
+    const cardRef = useRef<HTMLDivElement>(null);
+
     if (lastAttemptTime) {
         unlockTime = lastAttemptTime + cooldownPeriod;
         if (now < unlockTime) {
@@ -392,14 +395,45 @@ const DifficultyCard = ({ level, lastAttemptTime }: { level: Difficulty; lastAtt
         }
     }
     
+    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+        if (!cardRef.current || isLocked) return;
+
+        const card = cardRef.current;
+        const { width, height, left, top } = card.getBoundingClientRect();
+        const x = e.clientX - left;
+        const y = e.clientY - top;
+
+        const rotateX = -1 * (y - height / 2) / (height / 2) * 8;
+        const rotateY = (x - width / 2) / (width / 2) * 8;
+
+        setRotation({ x: rotateX, y: rotateY });
+    };
+
+    const handleMouseLeave = () => {
+        setRotation({ x: 0, y: 0 });
+    };
+    
     const Wrapper = isLocked ? 'div' : Link;
     
     return (
-        <Wrapper href={isLocked ? '#' : level.href} className={cn(
-            "group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background block relative",
-            isLocked && "cursor-not-allowed opacity-50"
-        )}>
-            <Card className="h-full transform transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/20 group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:shadow-primary/20">
+        <Wrapper
+            href={isLocked ? '#' : level.href}
+            className={cn(
+                "group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background block relative",
+                isLocked && "cursor-not-allowed opacity-50"
+            )}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ perspective: '1000px' }}
+        >
+            <Card 
+                ref={cardRef}
+                className="h-full transform transition-all duration-300 ease-out group-hover:shadow-2xl group-hover:shadow-primary/20"
+                style={{
+                    transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(${isLocked ? 1 : 1.05}, ${isLocked ? 1 : 1.05}, ${isLocked ? 1 : 1.05})`,
+                    transition: "transform 0.2s ease-out"
+                }}
+            >
                 <CardHeader className="flex flex-col items-center text-center space-y-4 p-6">
                     <div className="bg-primary/10 p-3 rounded-full">
                         <level.icon className="h-10 w-10 text-primary" />
