@@ -120,6 +120,12 @@ const FloatingParticles = () => (
     </div>
 );
 
+const EthereumIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+        <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z" />
+    </svg>
+);
+
 
 export default function WalletPage() {
     const router = useRouter();
@@ -275,56 +281,72 @@ export default function WalletPage() {
                 </Card>
 
                 <Tabs defaultValue="assets" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 rounded-lg bg-muted/30 p-1">
-                        <TabsTrigger value="assets"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
-                        <TabsTrigger value="send"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
-                        <TabsTrigger value="history"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 rounded-lg bg-muted/30 p-1 border-b-0">
+                        <TabsTrigger value="assets" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-500 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
+                        <TabsTrigger value="send" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-500 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
+                        <TabsTrigger value="history" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-500 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
                     </TabsList>
                     <TabsContent value="assets" className="mt-4 space-y-4">
                         <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Reward Token</CardTitle>
-                                <span className="text-sm text-muted-foreground">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
-                            </CardHeader>
-                            <CardContent>
-                                {isLoading ? (
-                                    <>
-                                        <Skeleton className="h-8 w-3/4" />
-                                        <Skeleton className="h-4 w-1/4 mt-2" />
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="text-2xl font-bold">
-                                            {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">
-                                            ${walletDetails?.rewardToken.usdValue || '0.00'} USD
-                                        </p>
-                                    </>
-                                )}
+                           <CardContent className="p-4 flex items-center gap-4">
+                                <div className="relative animate-pulse-slow">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-800 to-blue-900 border-2 border-transparent">
+                                        <Coins className="h-6 w-6 text-cyan-300" />
+                                    </div>
+                                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 opacity-60 blur-md -z-10" />
+                                </div>
+                                <div className="flex-grow">
+                                    <CardTitle className="text-sm font-medium">Reward Token</CardTitle>
+                                    <p className="text-sm text-muted-foreground">{walletDetails?.rewardToken.symbol || 'CQT'}</p>
+                                </div>
+                                <div className="text-right">
+                                    {isLoading ? (
+                                        <>
+                                            <Skeleton className="h-6 w-20" />
+                                            <Skeleton className="h-4 w-16 mt-1" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="text-lg font-bold">
+                                                {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                ${walletDetails?.rewardToken.usdValue || '0.00'} USD
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                         <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5">
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Base Ether</CardTitle>
-                                 <span className="text-sm text-muted-foreground">ETH</span>
-                            </CardHeader>
-                            <CardContent>
-                                {isLoading ? (
-                                    <>
-                                        <Skeleton className="h-8 w-3/4" />
-                                        <Skeleton className="h-4 w-1/4 mt-2" />
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="text-2xl font-bold">
-                                            {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">
-                                            ${walletDetails?.eth.usdValue || '0.00'} USD
-                                        </p>
-                                    </>
-                                )}
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="relative animate-pulse-slow">
+                                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border-2 border-transparent">
+                                        <EthereumIcon className="h-6 w-6 text-slate-300" />
+                                    </div>
+                                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-slate-400 to-slate-600 opacity-60 blur-md -z-10" />
+                                </div>
+                                <div className="flex-grow">
+                                    <CardTitle className="text-sm font-medium">Base Ether</CardTitle>
+                                     <p className="text-sm text-muted-foreground">ETH</p>
+                                </div>
+                                <div className="text-right">
+                                    {isLoading ? (
+                                        <>
+                                            <Skeleton className="h-6 w-24" />
+                                            <Skeleton className="h-4 w-20 mt-1" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="text-lg font-bold">
+                                                {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                ${walletDetails?.eth.usdValue || '0.00'} USD
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                          <Separator />
