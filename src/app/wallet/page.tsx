@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePrivy, useWallets, useSendTransaction } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
 import { getWalletDetails, getUserQuizHistory } from '@/app/actions';
@@ -134,17 +134,6 @@ const EthereumIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const chartData = [
-  { date: subDays(new Date(), 6), balance: 800 },
-  { date: subDays(new Date(), 5), balance: 850 },
-  { date: subDays(new Date(), 4), balance: 900 },
-  { date: subDays(new Date(), 3), balance: 880 },
-  { date: subDays(new Date(), 2), balance: 950 },
-  { date: subDays(new Date(), 1), balance: 1100 },
-  { date: new Date(), balance: 1150 },
-].map(item => ({...item, date: format(item.date, "MMM d")}));
-
-
 const chartConfig = {
   balance: {
     label: "Balance",
@@ -152,57 +141,69 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-const BalanceChart = () => (
-  <Card className="bg-transparent border-none shadow-none">
-    <CardHeader>
-      <CardTitle>Balance History</CardTitle>
-      <CardDescription>Last 7 days reward token balance</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <ChartContainer config={chartConfig} className="h-[200px] w-full">
-        <AreaChart
-          accessibilityLayer
-          data={chartData}
-          margin={{
-            left: 12,
-            right: 12,
-          }}
-        >
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="date"
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={(value) => value.slice(0, 3)}
-          />
-          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-          <defs>
-              <linearGradient id="fillBalance" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-balance)"
-                  stopOpacity={0.8}
+const BalanceChart = () => {
+    const chartData = useMemo(() => [
+        { date: subDays(new Date(), 6), balance: 800 },
+        { date: subDays(new Date(), 5), balance: 850 },
+        { date: subDays(new Date(), 4), balance: 900 },
+        { date: subDays(new Date(), 3), balance: 880 },
+        { date: subDays(new Date(), 2), balance: 950 },
+        { date: subDays(new Date(), 1), balance: 1100 },
+        { date: new Date(), balance: 1150 },
+    ].map(item => ({...item, date: format(item.date, "MMM d")})), []);
+
+    return (
+        <Card className="bg-transparent border-none shadow-none">
+            <CardHeader>
+            <CardTitle>Balance History</CardTitle>
+            <CardDescription>Last 7 days reward token balance</CardDescription>
+            </CardHeader>
+            <CardContent>
+            <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <AreaChart
+                accessibilityLayer
+                data={chartData}
+                margin={{
+                    left: 12,
+                    right: 12,
+                }}
+                >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={(value) => value.slice(0, 3)}
                 />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-balance)"
-                  stopOpacity={0.1}
+                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                <defs>
+                    <linearGradient id="fillBalance" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                        offset="5%"
+                        stopColor="var(--color-balance)"
+                        stopOpacity={0.8}
+                        />
+                        <stop
+                        offset="95%"
+                        stopColor="var(--color-balance)"
+                        stopOpacity={0.1}
+                        />
+                    </linearGradient>
+                    </defs>
+                <Area
+                    dataKey="balance"
+                    type="natural"
+                    fill="url(#fillBalance)"
+                    stroke="var(--color-balance)"
+                    stackId="a"
                 />
-              </linearGradient>
-            </defs>
-          <Area
-            dataKey="balance"
-            type="natural"
-            fill="url(#fillBalance)"
-            stroke="var(--color-balance)"
-            stackId="a"
-          />
-        </AreaChart>
-      </ChartContainer>
-    </CardContent>
-  </Card>
-);
+                </AreaChart>
+            </ChartContainer>
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function WalletPage() {
     const router = useRouter();
@@ -572,3 +573,4 @@ export default function WalletPage() {
     </div>
   );
 }
+
