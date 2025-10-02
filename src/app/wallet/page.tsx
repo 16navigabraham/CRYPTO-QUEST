@@ -91,6 +91,23 @@ const WalletSkeleton = () => (
     </div>
 );
 
+const FloatingParticles = () => (
+    <div className="absolute inset-0 -z-10 overflow-hidden">
+        {[...Array(30)].map((_, i) => {
+            const size = Math.random() * 3 + 1;
+            const style = {
+                width: `${size}px`,
+                height: `${size}px`,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animationDuration: `${Math.random() * 20 + 15}s`,
+                animationDelay: `${Math.random() * -30}s`,
+            };
+            return <div key={i} style={style} className="absolute rounded-full bg-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-float-slow" />;
+        })}
+    </div>
+);
+
 
 export default function WalletPage() {
     const router = useRouter();
@@ -211,7 +228,8 @@ export default function WalletPage() {
     const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
+    <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
+      <FloatingParticles />
       <div className="w-full max-w-lg">
         <Button asChild variant="ghost" className="mb-4">
             <Link href="/home">
@@ -219,7 +237,7 @@ export default function WalletPage() {
                 Back to Home
             </Link>
         </Button>
-        <Card className="bg-blue-900/10 backdrop-blur-lg border border-blue-500/20 rounded-2xl shadow-2xl shadow-blue-500/10">
+        <Card className="bg-black/20 backdrop-blur-lg border border-blue-500/30 rounded-2xl shadow-2xl shadow-blue-500/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <WalletIcon className="h-6 w-6 text-primary" /> Your Wallet

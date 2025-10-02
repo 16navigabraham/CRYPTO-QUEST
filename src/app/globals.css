@@ -73,6 +73,18 @@
     animation: float linear infinite;
   }
 
+  @keyframes float-slow {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(15px, 20px); }
+    50% { transform: translate(-10px, -15px); }
+    75% { transform: translate(20px, -10px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  .animate-float-slow {
+    animation: float-slow linear infinite;
+  }
+
   @keyframes fade-in-slide-up {
     from {
       opacity: 0;
