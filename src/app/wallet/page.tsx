@@ -153,7 +153,7 @@ export default function WalletPage() {
         }
     };
     
-    const onSubmit = async (values: z.infer<typeof sendSchema>) => {
+    const onSubmit = async (values: z.infer<typeof sendSchema>>) => {
         if (!embeddedWallet || !walletDetails) {
              toast({
                 variant: 'destructive',
@@ -200,7 +200,7 @@ export default function WalletPage() {
 
     if (!ready || isLoading) {
         return (
-            <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
+            <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 p-4 sm:p-8">
                 <WalletSkeleton />
             </div>
         );
@@ -210,7 +210,7 @@ export default function WalletPage() {
     const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
+    <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 p-4 sm:p-8">
       <div className="w-full max-w-lg">
         <Button asChild variant="ghost" className="mb-4">
             <Link href="/home">
