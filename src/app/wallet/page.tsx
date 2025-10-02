@@ -245,10 +245,16 @@ export default function WalletPage() {
                 </Card>
 
                 <Tabs defaultValue="assets" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="assets"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
-                        <TabsTrigger value="send"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
-                        <TabsTrigger value="history"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
+                    <TabsList className="w-full justify-start rounded-none border-b border-blue-500/20 bg-transparent p-0">
+                        <TabsTrigger value="assets" className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-blue-500 data-[state=active]:text-foreground data-[state=active]:shadow-none">
+                            <Coins className="mr-2 h-4 w-4" />Assets
+                        </TabsTrigger>
+                        <TabsTrigger value="send" className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-blue-500 data-[state=active]:text-foreground data-[state=active]:shadow-none">
+                            <Send className="mr-2 h-4 w-4" />Send
+                        </TabsTrigger>
+                        <TabsTrigger value="history" className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-blue-500 data-[state=active]:text-foreground data-[state=active]:shadow-none">
+                            <Clock className="mr-2 h-4 w-4" />History
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="assets" className="mt-4 space-y-4">
                         <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
@@ -427,3 +433,4 @@ export default function WalletPage() {
   );
 }
 
+    
