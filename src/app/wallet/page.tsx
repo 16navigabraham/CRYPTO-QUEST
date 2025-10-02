@@ -55,6 +55,8 @@ const sendSchema = z.object({
   }),
 });
 
+type SendFormValues = z.infer<typeof sendSchema>;
+
 type WalletDetails = {
     rewardToken: {
         balance: string;
@@ -216,7 +218,7 @@ export default function WalletPage() {
     const [isHistoryLoading, setIsHistoryLoading] = useState(true);
     const [copied, setCopied] = useState(false);
 
-    const form = useForm<z.infer<typeof sendSchema>>({
+    const form = useForm<SendFormValues>({
         resolver: zodResolver(sendSchema),
         defaultValues: { recipient: '', amount: '' },
     });
@@ -264,7 +266,7 @@ export default function WalletPage() {
         }
     };
     
-    const onSubmit = async (values: z.infer<typeof sendSchema>>) => {
+    const onSubmit = async (values: SendFormValues) => {
         if (!embeddedWallet || !walletDetails) {
              toast({
                 variant: 'destructive',
@@ -570,4 +572,3 @@ export default function WalletPage() {
     </div>
   );
 }
-
