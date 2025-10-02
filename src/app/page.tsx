@@ -153,7 +153,7 @@ export default function LandingPage() {
         </Button>
       </header>
 
-      <section className="flex-grow flex flex-col items-center justify-center text-center p-4">
+      <section className="flex flex-col items-center justify-center text-center p-4 py-16 sm:py-24">
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6 text-left">
                 <div className="min-h-[100px] sm:min-h-[120px] flex flex-col justify-center">
