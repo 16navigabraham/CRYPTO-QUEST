@@ -39,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '@/components/ui/form';
 
 
 const sendSchema = z.object({
@@ -101,23 +102,6 @@ const WalletSkeleton = () => (
                 </div>
             </CardContent>
         </Card>
-    </div>
-);
-
-const FloatingParticles = () => (
-    <div className="absolute inset-0 -z-10 overflow-hidden">
-        {[...Array(30)].map((_, i) => {
-            const size = Math.random() * 3 + 1;
-            const style = {
-                width: `${size}px`,
-                height: `${size}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animationDuration: `${Math.random() * 20 + 15}s`,
-                animationDelay: `${Math.random() * -30}s`,
-            };
-            return <div key={i} style={style} className="absolute rounded-full bg-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.5)] animate-float-slow" />;
-        })}
     </div>
 );
 
@@ -248,7 +232,6 @@ export default function WalletPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-background to-blue-950/20 p-4 sm:p-8">
-      <FloatingParticles />
       <div className="w-full max-w-lg">
         <div className="mb-4 flex items-center justify-between">
             <Button asChild variant="ghost" className="text-foreground/80 hover:text-foreground hover:bg-foreground/10 transition-transform hover:-translate-x-1 active:scale-95">
