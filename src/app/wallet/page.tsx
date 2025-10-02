@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -200,7 +201,7 @@ export default function WalletPage() {
 
     if (!ready || isLoading) {
         return (
-            <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 p-4 sm:p-8">
+            <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
                 <WalletSkeleton />
             </div>
         );
@@ -210,7 +211,7 @@ export default function WalletPage() {
     const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 p-4 sm:p-8">
+    <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
       <div className="w-full max-w-lg">
         <Button asChild variant="ghost" className="mb-4">
             <Link href="/home">
@@ -218,7 +219,7 @@ export default function WalletPage() {
                 Back to Home
             </Link>
         </Button>
-        <Card className="bg-blue-900/10 backdrop-blur-lg border border-blue-500/20 rounded-2xl shadow-2xl">
+        <Card className="bg-blue-900/10 backdrop-blur-lg border border-blue-500/20 rounded-2xl shadow-2xl shadow-blue-500/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <WalletIcon className="h-6 w-6 text-primary" /> Your Wallet
@@ -250,7 +251,7 @@ export default function WalletPage() {
                         <TabsTrigger value="history"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
                     </TabsList>
                     <TabsContent value="assets" className="mt-4 space-y-4">
-                        <Card>
+                        <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <CardTitle className="text-sm font-medium">Reward Token</CardTitle>
                                 <span className="text-sm text-muted-foreground">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
@@ -273,7 +274,7 @@ export default function WalletPage() {
                                 )}
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <CardTitle className="text-sm font-medium">Base Ether</CardTitle>
                                  <span className="text-sm text-muted-foreground">ETH</span>
@@ -426,4 +427,3 @@ export default function WalletPage() {
   );
 }
 
-    
