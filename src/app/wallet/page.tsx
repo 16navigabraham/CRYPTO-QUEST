@@ -218,7 +218,7 @@ export default function WalletPage() {
                 Back to Home
             </Link>
         </Button>
-        <Card>
+        <Card className="bg-blue-900/10 backdrop-blur-lg border border-blue-500/20 rounded-2xl shadow-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <WalletIcon className="h-6 w-6 text-primary" /> Your Wallet
@@ -425,3 +425,5 @@ export default function WalletPage() {
     </div>
   );
 }
+
+    
