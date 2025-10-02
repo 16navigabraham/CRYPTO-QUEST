@@ -249,7 +249,7 @@ export default function WalletPage() {
     <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
       <FloatingParticles />
       <div className="w-full max-w-lg">
-        <Button asChild variant="ghost" className="mb-4">
+        <Button asChild variant="ghost" className="mb-4 transition-transform hover:-translate-x-1 active:scale-95">
             <Link href="/home">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Home
@@ -263,7 +263,7 @@ export default function WalletPage() {
             <CardDescription>View balances, send tokens, and see your transaction history on the Base network.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-                <Card className="bg-muted/30">
+                <Card className="bg-muted/30 transition-all hover:bg-muted/40 hover:shadow-lg">
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-full">
@@ -274,17 +274,17 @@ export default function WalletPage() {
                                 <p className="font-mono font-semibold">{truncatedAddress}</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={handleCopy}>
+                        <Button variant="ghost" size="icon" onClick={handleCopy} className="transition-transform hover:scale-110 active:scale-95">
                             {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
                         </Button>
                     </CardContent>
                 </Card>
 
                 <Tabs defaultValue="assets" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 rounded-lg bg-muted/30 p-1 border-b-0">
-                        <TabsTrigger value="assets" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-500 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
-                        <TabsTrigger value="send" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-500 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
-                        <TabsTrigger value="history" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-500 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 rounded-lg bg-transparent p-0 border-b border-blue-500/20">
+                        <TabsTrigger value="assets" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
+                        <TabsTrigger value="send" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
+                        <TabsTrigger value="history" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
                     </TabsList>
                     <TabsContent value="assets" className="mt-4 space-y-4">
                         <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
@@ -353,7 +353,7 @@ export default function WalletPage() {
                          <div>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="outline" className="w-full">
+                                    <Button variant="outline" className="w-full transition-all hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive active:scale-95">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         Export Private Key
                                     </Button>
@@ -394,7 +394,7 @@ export default function WalletPage() {
                                         <FormItem>
                                         <FormLabel>Recipient Address</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="0x..." {...field} />
+                                            <Input placeholder="0x..." {...field} className="transition-all focus:shadow-lg focus:shadow-primary/20" />
                                         </FormControl>
                                         <FormMessage />
                                         </FormItem>
@@ -407,7 +407,7 @@ export default function WalletPage() {
                                         <FormItem>
                                         <FormLabel>Amount to Send</FormLabel>
                                         <div className="relative">
-                                            <Input type="number" step="any" placeholder="0.0" {...field} className="pr-16"/>
+                                            <Input type="number" step="any" placeholder="0.0" {...field} className="pr-16 transition-all focus:shadow-lg focus:shadow-primary/20"/>
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                                                  <span className="text-muted-foreground sm:text-sm">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
                                             </div>
@@ -416,7 +416,7 @@ export default function WalletPage() {
                                         </FormItem>
                                     )}
                                     />
-                                <Button type="submit" className="w-full" disabled={isSending}>
+                                <Button type="submit" className="w-full transition-all hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-px active:scale-95" disabled={isSending}>
                                     {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                     Send Tokens
                                 </Button>
@@ -424,7 +424,7 @@ export default function WalletPage() {
                         </Form>
                     </TabsContent>
                     <TabsContent value="history" className="mt-4">
-                       <Card>
+                       <Card className="transition-all hover:shadow-lg">
                             <CardHeader>
                                 <CardTitle className="text-lg">Quiz Rewards</CardTitle>
                                 <CardDescription>History of rewards claimed from completing quizzes.</CardDescription>
@@ -438,7 +438,7 @@ export default function WalletPage() {
                                     ) : history.length > 0 ? (
                                         <div className="space-y-4">
                                             {history.map((item) => (
-                                                <div key={item._id} className="flex items-center justify-between gap-4">
+                                                <div key={item._id} className="flex items-center justify-between gap-4 transition-all hover:bg-muted/10 p-2 rounded-lg">
                                                     <div className="flex items-center gap-3">
                                                         <div className="p-2 bg-green-500/10 rounded-full">
                                                             <Coins className="h-5 w-5 text-green-600" />
