@@ -45,6 +45,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 
 const sendSchema = z.object({
@@ -310,7 +311,7 @@ export default function WalletPage() {
 
     if (!ready || isLoading) {
         return (
-            <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
+            <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-background to-blue-950/20 p-4 sm:p-8">
                 <WalletSkeleton />
             </div>
         );
@@ -320,49 +321,52 @@ export default function WalletPage() {
     const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
+    <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-background to-blue-950/20 p-4 sm:p-8">
       <FloatingParticles />
       <div className="w-full max-w-lg">
-        <Button asChild variant="ghost" className="mb-4 text-white/80 hover:text-white hover:bg-white/10 transition-transform hover:-translate-x-1 active:scale-95">
-            <Link href="/home">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
-            </Link>
-        </Button>
-        <Card className="bg-slate-900/10 backdrop-blur-xl border border-blue-500/20 rounded-2xl shadow-2xl shadow-blue-500/10 text-white">
+        <div className="mb-4 flex items-center justify-between">
+            <Button asChild variant="ghost" className="text-foreground/80 hover:text-foreground hover:bg-foreground/10 transition-transform hover:-translate-x-1 active:scale-95">
+                <Link href="/home">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                </Link>
+            </Button>
+            <ThemeSwitcher />
+        </div>
+        <Card className="bg-card/60 backdrop-blur-xl border-primary/20 rounded-2xl shadow-2xl shadow-primary/10 text-card-foreground">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-foreground">
                 <WalletIcon className="h-6 w-6 text-primary" /> Your Wallet
             </CardTitle>
-            <CardDescription className="text-white/60">View balances, send tokens, and see your transaction history on the Base network.</CardDescription>
+            <CardDescription className="text-foreground/60">View balances, send tokens, and see your transaction history on the Base network.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-                <Card className="bg-black/20 transition-all hover:bg-black/30 hover:shadow-lg">
+                <Card className="bg-background/30 transition-all hover:bg-background/50 hover:shadow-lg">
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-full">
                                 <WalletIcon className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <p className="text-sm text-white/60">My Wallet</p>
-                                <p className="font-mono font-semibold text-white">{truncatedAddress}</p>
+                                <p className="text-sm text-foreground/60">My Wallet</p>
+                                <p className="font-mono font-semibold text-foreground">{truncatedAddress}</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={handleCopy} className="text-white/80 hover:text-white hover:bg-white/10 transition-transform hover:scale-110 active:scale-95">
+                        <Button variant="ghost" size="icon" onClick={handleCopy} className="text-foreground/80 hover:text-foreground hover:bg-foreground/10 transition-transform hover:scale-110 active:scale-95">
                             {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
                         </Button>
                     </CardContent>
                 </Card>
 
                 <Tabs defaultValue="assets" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 rounded-lg bg-transparent p-0 border-b border-blue-500/20">
-                        <TabsTrigger value="assets" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-white/60 hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
-                        <TabsTrigger value="send" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-white/60 hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
-                        <TabsTrigger value="history" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-white/60 hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 rounded-lg bg-transparent p-0 border-b border-primary/20">
+                        <TabsTrigger value="assets" className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-foreground/60 hover:text-primary hover:bg-primary/5 active:scale-95"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
+                        <TabsTrigger value="send" className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-foreground/60 hover:text-primary hover:bg-primary/5 active:scale-95"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
+                        <TabsTrigger value="history" className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-foreground/60 hover:text-primary hover:bg-primary/5 active:scale-95"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
                     </TabsList>
                     <TabsContent value="assets" className="mt-4 space-y-4">
                         <BalanceChart />
-                        <Card className="bg-black/20 border-blue-500/10 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
+                        <Card className="bg-background/20 border-primary/10 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
                            <CardContent className="p-4 flex items-center gap-4">
                                 <div className="relative animate-pulse-slow">
                                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-800 to-blue-900 border-2 border-transparent">
@@ -371,21 +375,21 @@ export default function WalletPage() {
                                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 opacity-60 blur-md -z-10" />
                                 </div>
                                 <div className="flex-grow">
-                                    <CardTitle className="text-sm font-medium text-white">Reward Token</CardTitle>
-                                    <p className="text-sm text-white/60">{walletDetails?.rewardToken.symbol || 'CQT'}</p>
+                                    <CardTitle className="text-sm font-medium text-foreground">Reward Token</CardTitle>
+                                    <p className="text-sm text-foreground/60">{walletDetails?.rewardToken.symbol || 'CQT'}</p>
                                 </div>
                                 <div className="text-right">
                                     {isLoading ? (
                                         <>
-                                            <Skeleton className="h-6 w-20 bg-white/10" />
-                                            <Skeleton className="h-4 w-16 mt-1 bg-white/10" />
+                                            <Skeleton className="h-6 w-20 bg-foreground/10" />
+                                            <Skeleton className="h-4 w-16 mt-1 bg-foreground/10" />
                                         </>
                                     ) : (
                                         <>
-                                            <div className="text-lg font-bold text-white">
+                                            <div className="text-lg font-bold text-foreground">
                                                 {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
                                             </div>
-                                            <p className="text-xs text-white/60">
+                                            <p className="text-xs text-foreground/60">
                                                 ${walletDetails?.rewardToken.usdValue || '0.00'} USD
                                             </p>
                                         </>
@@ -393,7 +397,7 @@ export default function WalletPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-black/20 border-blue-500/10 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5">
+                        <Card className="bg-background/20 border-blue-500/10 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5">
                             <CardContent className="p-4 flex items-center gap-4">
                                 <div className="relative animate-pulse-slow">
                                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border-2 border-transparent">
@@ -402,21 +406,21 @@ export default function WalletPage() {
                                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-slate-400 to-slate-600 opacity-60 blur-md -z-10" />
                                 </div>
                                 <div className="flex-grow">
-                                    <CardTitle className="text-sm font-medium text-white">Base Ether</CardTitle>
-                                     <p className="text-sm text-white/60">ETH</p>
+                                    <CardTitle className="text-sm font-medium text-foreground">Base Ether</CardTitle>
+                                     <p className="text-sm text-foreground/60">ETH</p>
                                 </div>
                                 <div className="text-right">
                                     {isLoading ? (
                                         <>
-                                            <Skeleton className="h-6 w-24 bg-white/10" />
-                                            <Skeleton className="h-4 w-20 mt-1 bg-white/10" />
+                                            <Skeleton className="h-6 w-24 bg-foreground/10" />
+                                            <Skeleton className="h-4 w-20 mt-1 bg-foreground/10" />
                                         </>
                                     ) : (
                                         <>
-                                            <div className="text-lg font-bold text-white">
+                                            <div className="text-lg font-bold text-foreground">
                                                 {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
                                             </div>
-                                            <p className="text-xs text-white/60">
+                                            <p className="text-xs text-foreground/60">
                                                 ${walletDetails?.eth.usdValue || '0.00'} USD
                                             </p>
                                         </>
@@ -424,7 +428,7 @@ export default function WalletPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                         <Separator className="bg-blue-500/20" />
+                         <Separator className="bg-primary/20" />
                          <div>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
@@ -447,13 +451,13 @@ export default function WalletPage() {
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                             <p className="text-xs text-white/50 text-center pt-2">
+                             <p className="text-xs text-foreground/50 text-center pt-2">
                                 For use in other wallets like MetaMask. Keep it secret, keep it safe!
                             </p>
                          </div>
                     </TabsContent>
                     <TabsContent value="send" className="mt-4">
-                        <Alert variant="default" className="mb-4 bg-blue-500/10 border-blue-500/30 text-white/90">
+                        <Alert variant="default" className="mb-4 bg-primary/10 border-primary/30 text-foreground/90">
                             <AlertTriangle className="h-4 w-4 text-blue-400" />
                             <AlertTitle className="text-blue-300">Gas Fees Required</AlertTitle>
                             <AlertDescription>
@@ -467,9 +471,9 @@ export default function WalletPage() {
                                     name="recipient"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel className="text-white/80">Recipient Address</FormLabel>
+                                        <FormLabel className="text-foreground/80">Recipient Address</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="0x..." {...field} className="bg-black/20 border-blue-500/30 text-white transition-all focus:shadow-lg focus:shadow-primary/20" />
+                                            <Input placeholder="0x..." {...field} className="bg-background/20 border-primary/30 text-foreground transition-all focus:shadow-lg focus:shadow-primary/20" />
                                         </FormControl>
                                         <FormMessage />
                                         </FormItem>
@@ -480,18 +484,18 @@ export default function WalletPage() {
                                     name="amount"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel className="text-white/80">Amount to Send</FormLabel>
+                                        <FormLabel className="text-foreground/80">Amount to Send</FormLabel>
                                         <div className="relative">
-                                            <Input type="number" step="any" placeholder="0.0" {...field} className="pr-16 bg-black/20 border-blue-500/30 text-white transition-all focus:shadow-lg focus:shadow-primary/20"/>
+                                            <Input type="number" step="any" placeholder="0.0" {...field} className="pr-16 bg-background/20 border-primary/30 text-foreground transition-all focus:shadow-lg focus:shadow-primary/20"/>
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                                 <span className="text-white/60 sm:text-sm">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
+                                                 <span className="text-foreground/60 sm:text-sm">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
                                             </div>
                                         </div>
                                         <FormMessage />
                                         </FormItem>
                                     )}
                                     />
-                                <Button type="submit" className="w-full bg-primary text-white transition-all hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-px active:scale-95" disabled={isSending}>
+                                <Button type="submit" className="w-full bg-primary text-primary-foreground transition-all hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-px active:scale-95" disabled={isSending}>
                                     {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                     Send Tokens
                                 </Button>
@@ -499,32 +503,32 @@ export default function WalletPage() {
                         </Form>
                     </TabsContent>
                     <TabsContent value="history" className="mt-4">
-                       <Card className="bg-black/20 border-blue-500/10 transition-all hover:shadow-lg">
+                       <Card className="bg-background/20 border-primary/10 transition-all hover:shadow-lg">
                             <CardHeader>
-                                <CardTitle className="text-lg text-white">Quiz Rewards</CardTitle>
-                                <CardDescription className="text-white/60">History of rewards claimed from completing quizzes.</CardDescription>
+                                <CardTitle className="text-lg text-foreground">Quiz Rewards</CardTitle>
+                                <CardDescription className="text-foreground/60">History of rewards claimed from completing quizzes.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ScrollArea className="h-72">
                                      {isHistoryLoading ? (
                                         <div className="space-y-4">
-                                            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full bg-white/10" />)}
+                                            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full bg-foreground/10" />)}
                                         </div>
                                     ) : history.length > 0 ? (
                                         <div className="space-y-4">
                                             {history.map((item) => (
-                                                <div key={item._id} className="flex items-center justify-between gap-4 transition-all hover:bg-white/5 p-2 rounded-lg">
+                                                <div key={item._id} className="flex items-center justify-between gap-4 transition-all hover:bg-foreground/5 p-2 rounded-lg">
                                                     <div className="flex items-center gap-3">
                                                         <div className="p-2 bg-green-500/10 rounded-full">
                                                             <Coins className="h-5 w-5 text-green-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="font-semibold capitalize flex items-center gap-1 text-white">
+                                                            <p className="font-semibold capitalize flex items-center gap-1 text-foreground">
                                                                 {item.difficulty} Quiz
                                                                 <TooltipProvider>
                                                                     <Tooltip>
                                                                         <TooltipTrigger>
-                                                                            <ExternalLink className="h-3 w-3 text-white/60"/>
+                                                                            <ExternalLink className="h-3 w-3 text-foreground/60"/>
                                                                         </TooltipTrigger>
                                                                         <TooltipContent>
                                                                             <p>ID: {item.quizId}</p>
@@ -532,7 +536,7 @@ export default function WalletPage() {
                                                                     </Tooltip>
                                                                 </TooltipProvider>
                                                             </p>
-                                                            <p className="text-sm text-white/60">
+                                                            <p className="text-sm text-foreground/60">
                                                                 {format(new Date(item.createdAt), "PPp")}
                                                             </p>
                                                         </div>
@@ -541,7 +545,7 @@ export default function WalletPage() {
                                                          <p className="font-semibold text-green-400">
                                                             +{item.score}/{item.maxScore} pts
                                                          </p>
-                                                         <p className="text-sm text-white/60">
+                                                         <p className="text-sm text-foreground/60">
                                                             {item.percentage}%
                                                          </p>
                                                     </div>
@@ -549,10 +553,10 @@ export default function WalletPage() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center text-center h-48 rounded-md bg-black/20">
-                                            <BookOpen className="h-10 w-10 text-white/60 mb-2" />
-                                            <h3 className="font-semibold text-white">No History Yet</h3>
-                                            <p className="text-sm text-white/60">Complete a quiz to see your rewards here.</p>
+                                        <div className="flex flex-col items-center justify-center text-center h-48 rounded-md bg-background/20">
+                                            <BookOpen className="h-10 w-10 text-foreground/60 mb-2" />
+                                            <h3 className="font-semibold text-foreground">No History Yet</h3>
+                                            <p className="text-sm text-foreground/60">Complete a quiz to see your rewards here.</p>
                                         </div>
                                     )}
                                 </ScrollArea>
@@ -567,4 +571,3 @@ export default function WalletPage() {
   );
 }
 
-    
