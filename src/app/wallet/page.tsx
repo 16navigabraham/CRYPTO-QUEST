@@ -15,14 +15,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { parseUnits, type Hex } from 'viem';
 import { base } from 'viem/chains';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatDistanceToNow } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   Tooltip,
   TooltipContent,
@@ -40,6 +39,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Area, AreaChart, CartesianGrid, XAxis, Tooltip as ChartTooltip } from "recharts"
+import {
+  ChartContainer,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
 
 
 const sendSchema = z.object({
@@ -126,6 +131,75 @@ const EthereumIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const chartData = [
+  { date: subDays(new Date(), 6), balance: 800 },
+  { date: subDays(new Date(), 5), balance: 850 },
+  { date: subDays(new Date(), 4), balance: 900 },
+  { date: subDays(new Date(), 3), balance: 880 },
+  { date: subDays(new Date(), 2), balance: 950 },
+  { date: subDays(new Date(), 1), balance: 1100 },
+  { date: new Date(), balance: 1150 },
+].map(item => ({...item, date: format(item.date, "MMM d")}));
+
+
+const chartConfig = {
+  balance: {
+    label: "Balance",
+    color: "hsl(207 44% 49%)",
+  },
+} satisfies ChartConfig
+
+const BalanceChart = () => (
+  <Card className="bg-transparent border-none shadow-none">
+    <CardHeader>
+      <CardTitle>Balance History</CardTitle>
+      <CardDescription>Last 7 days reward token balance</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <AreaChart
+          accessibilityLayer
+          data={chartData}
+          margin={{
+            left: 12,
+            right: 12,
+          }}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="date"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value) => value.slice(0, 3)}
+          />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+          <defs>
+              <linearGradient id="fillBalance" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-balance)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-balance)"
+                  stopOpacity={0.1}
+                />
+              </linearGradient>
+            </defs>
+          <Area
+            dataKey="balance"
+            type="natural"
+            fill="url(#fillBalance)"
+            stroke="var(--color-balance)"
+            stackId="a"
+          />
+        </AreaChart>
+      </ChartContainer>
+    </CardContent>
+  </Card>
+);
 
 export default function WalletPage() {
     const router = useRouter();
@@ -156,7 +230,7 @@ export default function WalletPage() {
                     getUserQuizHistory(embeddedWallet.address)
                 ]);
                 setWalletDetails(details);
-                setHistory(historyData?.data?.history || []);
+                setHistory(historyData?.data?.history.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || []);
             } catch (error) {
                 console.error("Failed to fetch wallet data:", error);
                  toast({
@@ -249,32 +323,32 @@ export default function WalletPage() {
     <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 to-blue-950 p-4 sm:p-8">
       <FloatingParticles />
       <div className="w-full max-w-lg">
-        <Button asChild variant="ghost" className="mb-4 transition-transform hover:-translate-x-1 active:scale-95">
+        <Button asChild variant="ghost" className="mb-4 text-white/80 hover:text-white hover:bg-white/10 transition-transform hover:-translate-x-1 active:scale-95">
             <Link href="/home">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Home
             </Link>
         </Button>
-        <Card className="bg-black/20 backdrop-blur-lg border border-blue-500/30 rounded-2xl shadow-2xl shadow-blue-500/10">
+        <Card className="bg-slate-900/10 backdrop-blur-xl border border-blue-500/20 rounded-2xl shadow-2xl shadow-blue-500/10 text-white">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
                 <WalletIcon className="h-6 w-6 text-primary" /> Your Wallet
             </CardTitle>
-            <CardDescription>View balances, send tokens, and see your transaction history on the Base network.</CardDescription>
+            <CardDescription className="text-white/60">View balances, send tokens, and see your transaction history on the Base network.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-                <Card className="bg-muted/30 transition-all hover:bg-muted/40 hover:shadow-lg">
+                <Card className="bg-black/20 transition-all hover:bg-black/30 hover:shadow-lg">
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-full">
                                 <WalletIcon className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">My Wallet</p>
-                                <p className="font-mono font-semibold">{truncatedAddress}</p>
+                                <p className="text-sm text-white/60">My Wallet</p>
+                                <p className="font-mono font-semibold text-white">{truncatedAddress}</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={handleCopy} className="transition-transform hover:scale-110 active:scale-95">
+                        <Button variant="ghost" size="icon" onClick={handleCopy} className="text-white/80 hover:text-white hover:bg-white/10 transition-transform hover:scale-110 active:scale-95">
                             {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
                         </Button>
                     </CardContent>
@@ -282,12 +356,13 @@ export default function WalletPage() {
 
                 <Tabs defaultValue="assets" className="w-full">
                     <TabsList className="grid w-full grid-cols-3 rounded-lg bg-transparent p-0 border-b border-blue-500/20">
-                        <TabsTrigger value="assets" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
-                        <TabsTrigger value="send" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
-                        <TabsTrigger value="history" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
+                        <TabsTrigger value="assets" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-white/60 hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Coins className="mr-2 h-4 w-4" />Assets</TabsTrigger>
+                        <TabsTrigger value="send" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-white/60 hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Send className="mr-2 h-4 w-4" />Send</TabsTrigger>
+                        <TabsTrigger value="history" className="data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 data-[state=active]:bg-transparent border-b-2 border-transparent rounded-none transition-all text-white/60 hover:text-blue-400 hover:bg-blue-500/5 active:scale-95"><Clock className="mr-2 h-4 w-4" />History</TabsTrigger>
                     </TabsList>
                     <TabsContent value="assets" className="mt-4 space-y-4">
-                        <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
+                        <BalanceChart />
+                        <Card className="bg-black/20 border-blue-500/10 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 hover:bg-primary/5">
                            <CardContent className="p-4 flex items-center gap-4">
                                 <div className="relative animate-pulse-slow">
                                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-800 to-blue-900 border-2 border-transparent">
@@ -296,21 +371,21 @@ export default function WalletPage() {
                                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 opacity-60 blur-md -z-10" />
                                 </div>
                                 <div className="flex-grow">
-                                    <CardTitle className="text-sm font-medium">Reward Token</CardTitle>
-                                    <p className="text-sm text-muted-foreground">{walletDetails?.rewardToken.symbol || 'CQT'}</p>
+                                    <CardTitle className="text-sm font-medium text-white">Reward Token</CardTitle>
+                                    <p className="text-sm text-white/60">{walletDetails?.rewardToken.symbol || 'CQT'}</p>
                                 </div>
                                 <div className="text-right">
                                     {isLoading ? (
                                         <>
-                                            <Skeleton className="h-6 w-20" />
-                                            <Skeleton className="h-4 w-16 mt-1" />
+                                            <Skeleton className="h-6 w-20 bg-white/10" />
+                                            <Skeleton className="h-4 w-16 mt-1 bg-white/10" />
                                         </>
                                     ) : (
                                         <>
-                                            <div className="text-lg font-bold">
+                                            <div className="text-lg font-bold text-white">
                                                 {walletDetails ? parseFloat(walletDetails.rewardToken.balance).toLocaleString('en-US', { maximumFractionDigits: 4 }) : '0.00'}
                                             </div>
-                                            <p className="text-xs text-muted-foreground">
+                                            <p className="text-xs text-white/60">
                                                 ${walletDetails?.rewardToken.usdValue || '0.00'} USD
                                             </p>
                                         </>
@@ -318,7 +393,7 @@ export default function WalletPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5">
+                        <Card className="bg-black/20 border-blue-500/10 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/50 hover:bg-blue-500/5">
                             <CardContent className="p-4 flex items-center gap-4">
                                 <div className="relative animate-pulse-slow">
                                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border-2 border-transparent">
@@ -327,21 +402,21 @@ export default function WalletPage() {
                                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-slate-400 to-slate-600 opacity-60 blur-md -z-10" />
                                 </div>
                                 <div className="flex-grow">
-                                    <CardTitle className="text-sm font-medium">Base Ether</CardTitle>
-                                     <p className="text-sm text-muted-foreground">ETH</p>
+                                    <CardTitle className="text-sm font-medium text-white">Base Ether</CardTitle>
+                                     <p className="text-sm text-white/60">ETH</p>
                                 </div>
                                 <div className="text-right">
                                     {isLoading ? (
                                         <>
-                                            <Skeleton className="h-6 w-24" />
-                                            <Skeleton className="h-4 w-20 mt-1" />
+                                            <Skeleton className="h-6 w-24 bg-white/10" />
+                                            <Skeleton className="h-4 w-20 mt-1 bg-white/10" />
                                         </>
                                     ) : (
                                         <>
-                                            <div className="text-lg font-bold">
+                                            <div className="text-lg font-bold text-white">
                                                 {walletDetails ? parseFloat(walletDetails.eth.balance).toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.000000'}
                                             </div>
-                                            <p className="text-xs text-muted-foreground">
+                                            <p className="text-xs text-white/60">
                                                 ${walletDetails?.eth.usdValue || '0.00'} USD
                                             </p>
                                         </>
@@ -349,11 +424,11 @@ export default function WalletPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                         <Separator />
+                         <Separator className="bg-blue-500/20" />
                          <div>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="outline" className="w-full transition-all hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive active:scale-95">
+                                    <Button variant="outline" className="w-full bg-transparent border-red-500/30 text-red-500/80 transition-all hover:bg-destructive/10 hover:border-destructive/50 hover:text-destructive active:scale-95">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         Export Private Key
                                     </Button>
@@ -372,15 +447,15 @@ export default function WalletPage() {
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                             <p className="text-xs text-muted-foreground text-center pt-2">
+                             <p className="text-xs text-white/50 text-center pt-2">
                                 For use in other wallets like MetaMask. Keep it secret, keep it safe!
                             </p>
                          </div>
                     </TabsContent>
                     <TabsContent value="send" className="mt-4">
-                        <Alert variant="default" className="mb-4">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertTitle>Gas Fees Required</AlertTitle>
+                        <Alert variant="default" className="mb-4 bg-blue-500/10 border-blue-500/30 text-white/90">
+                            <AlertTriangle className="h-4 w-4 text-blue-400" />
+                            <AlertTitle className="text-blue-300">Gas Fees Required</AlertTitle>
                             <AlertDescription>
                                 Sending tokens requires a small amount of Base ETH for transaction fees (gas).
                             </AlertDescription>
@@ -392,9 +467,9 @@ export default function WalletPage() {
                                     name="recipient"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Recipient Address</FormLabel>
+                                        <FormLabel className="text-white/80">Recipient Address</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="0x..." {...field} className="transition-all focus:shadow-lg focus:shadow-primary/20" />
+                                            <Input placeholder="0x..." {...field} className="bg-black/20 border-blue-500/30 text-white transition-all focus:shadow-lg focus:shadow-primary/20" />
                                         </FormControl>
                                         <FormMessage />
                                         </FormItem>
@@ -405,18 +480,18 @@ export default function WalletPage() {
                                     name="amount"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Amount to Send</FormLabel>
+                                        <FormLabel className="text-white/80">Amount to Send</FormLabel>
                                         <div className="relative">
-                                            <Input type="number" step="any" placeholder="0.0" {...field} className="pr-16 transition-all focus:shadow-lg focus:shadow-primary/20"/>
+                                            <Input type="number" step="any" placeholder="0.0" {...field} className="pr-16 bg-black/20 border-blue-500/30 text-white transition-all focus:shadow-lg focus:shadow-primary/20"/>
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                                 <span className="text-muted-foreground sm:text-sm">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
+                                                 <span className="text-white/60 sm:text-sm">{walletDetails?.rewardToken.symbol || 'CQT'}</span>
                                             </div>
                                         </div>
                                         <FormMessage />
                                         </FormItem>
                                     )}
                                     />
-                                <Button type="submit" className="w-full transition-all hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-px active:scale-95" disabled={isSending}>
+                                <Button type="submit" className="w-full bg-primary text-white transition-all hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-px active:scale-95" disabled={isSending}>
                                     {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                     Send Tokens
                                 </Button>
@@ -424,32 +499,32 @@ export default function WalletPage() {
                         </Form>
                     </TabsContent>
                     <TabsContent value="history" className="mt-4">
-                       <Card className="transition-all hover:shadow-lg">
+                       <Card className="bg-black/20 border-blue-500/10 transition-all hover:shadow-lg">
                             <CardHeader>
-                                <CardTitle className="text-lg">Quiz Rewards</CardTitle>
-                                <CardDescription>History of rewards claimed from completing quizzes.</CardDescription>
+                                <CardTitle className="text-lg text-white">Quiz Rewards</CardTitle>
+                                <CardDescription className="text-white/60">History of rewards claimed from completing quizzes.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ScrollArea className="h-72">
                                      {isHistoryLoading ? (
                                         <div className="space-y-4">
-                                            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                                            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full bg-white/10" />)}
                                         </div>
                                     ) : history.length > 0 ? (
                                         <div className="space-y-4">
                                             {history.map((item) => (
-                                                <div key={item._id} className="flex items-center justify-between gap-4 transition-all hover:bg-muted/10 p-2 rounded-lg">
+                                                <div key={item._id} className="flex items-center justify-between gap-4 transition-all hover:bg-white/5 p-2 rounded-lg">
                                                     <div className="flex items-center gap-3">
                                                         <div className="p-2 bg-green-500/10 rounded-full">
-                                                            <Coins className="h-5 w-5 text-green-600" />
+                                                            <Coins className="h-5 w-5 text-green-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="font-semibold capitalize flex items-center gap-1">
+                                                            <p className="font-semibold capitalize flex items-center gap-1 text-white">
                                                                 {item.difficulty} Quiz
                                                                 <TooltipProvider>
                                                                     <Tooltip>
                                                                         <TooltipTrigger>
-                                                                            <ExternalLink className="h-3 w-3 text-muted-foreground"/>
+                                                                            <ExternalLink className="h-3 w-3 text-white/60"/>
                                                                         </TooltipTrigger>
                                                                         <TooltipContent>
                                                                             <p>ID: {item.quizId}</p>
@@ -457,16 +532,16 @@ export default function WalletPage() {
                                                                     </Tooltip>
                                                                 </TooltipProvider>
                                                             </p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                                                            <p className="text-sm text-white/60">
+                                                                {format(new Date(item.createdAt), "PPp")}
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                         <p className="font-semibold text-green-600">
+                                                         <p className="font-semibold text-green-400">
                                                             +{item.score}/{item.maxScore} pts
                                                          </p>
-                                                         <p className="text-sm text-muted-foreground">
+                                                         <p className="text-sm text-white/60">
                                                             {item.percentage}%
                                                          </p>
                                                     </div>
@@ -474,10 +549,10 @@ export default function WalletPage() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center text-center h-48 rounded-md bg-muted/50">
-                                            <BookOpen className="h-10 w-10 text-muted-foreground mb-2" />
-                                            <h3 className="font-semibold">No History Yet</h3>
-                                            <p className="text-sm text-muted-foreground">Complete a quiz to see your rewards here.</p>
+                                        <div className="flex flex-col items-center justify-center text-center h-48 rounded-md bg-black/20">
+                                            <BookOpen className="h-10 w-10 text-white/60 mb-2" />
+                                            <h3 className="font-semibold text-white">No History Yet</h3>
+                                            <p className="text-sm text-white/60">Complete a quiz to see your rewards here.</p>
                                         </div>
                                     )}
                                 </ScrollArea>
