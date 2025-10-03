@@ -34,9 +34,9 @@ type Player = {
 }
 
 const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="h-6 w-6 text-yellow-400" />;
-    if (rank === 2) return <Medal className="h-6 w-6 text-slate-400" />;
-    if (rank === 3) return <Trophy className="h-6 w-6 text-yellow-600" />;
+    if (rank === 1) return <Crown className="h-8 w-8 text-yellow-400 drop-shadow-[0_0_15px_rgba(234,179,8,0.8)] animate-float-slow" />;
+    if (rank === 2) return <Medal className="h-8 w-8 text-slate-300 drop-shadow-[0_0_15px_rgba(203,213,225,0.7)] animate-float-slow" />;
+    if (rank === 3) return <Trophy className="h-8 w-8 text-yellow-600 drop-shadow-[0_0_15px_rgba(202,138,4,0.7)] animate-float-slow" />;
     return <span className="text-lg font-bold">{rank}</span>;
 }
 
@@ -188,7 +188,7 @@ export default function LeaderboardPage() {
                   )}
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <div className="mb-2">{getRankIcon(player.rank)}</div>
+                    <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
                      <Avatar className="h-20 w-20 border-2 border-primary">
                       <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
                       <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
