@@ -121,6 +121,24 @@ export default function LeaderboardPage() {
     fetchLeaderboard();
   }, []);
 
+  const AnimatedWaves = () => (
+    <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden">
+        <div 
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
+            style={{ animationDelay: '0s', animationDuration: '15s' }}
+        />
+        <div 
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
+            style={{ animationDelay: '-5s', animationDuration: '20s' }}
+        />
+        <div 
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
+            style={{ animationDelay: '-10s', animationDuration: '25s' }}
+        />
+    </div>
+  );
+
+
   if (loading) {
       return (
          <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
@@ -141,24 +159,25 @@ export default function LeaderboardPage() {
   const restOfPlayers = players.slice(3);
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
-      <div className="w-full max-w-4xl">
-        <Button asChild variant="ghost" className="mb-4">
+    <div className="relative min-h-screen w-full bg-gradient-to-br from-[#0a1628] via-[#1e3a8a] to-[#0c4a6e] p-4 sm:p-8 flex flex-col items-center">
+      <AnimatedWaves />
+      <div className="w-full max-w-4xl z-10">
+        <Button asChild variant="ghost" className="mb-4 text-white/80 hover:text-white hover:bg-white/10">
             <Link href="/home">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Home
             </Link>
         </Button>
-        <Card>
+        <Card className="bg-card/10 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/10 text-card-foreground">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold tracking-tight">Leaderboard</CardTitle>
-            <CardDescription>See who is leading the quest for knowledge!</CardDescription>
+            <CardDescription className="text-white/70">See who is leading the quest for knowledge!</CardDescription>
           </CardHeader>
           <CardContent>
             {/* Top 3 Players */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               {topThree.map((player) => (
-                <Card key={player.rank} className={cn("text-center p-4 transform transition-transform hover:-translate-y-1", getRankColor(player.rank))}>
+                <Card key={player.rank} className={cn("text-center p-4 transform transition-transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/30", getRankColor(player.rank))}>
                   <div className="flex flex-col items-center gap-2">
                     <div className="mb-2">{getRankIcon(player.rank)}</div>
                      <Avatar className="h-20 w-20 border-2 border-primary">
@@ -166,7 +185,7 @@ export default function LeaderboardPage() {
                       <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <p className="text-xl font-bold">{player.name}</p>
-                    <Badge variant="secondary">{player.score} Points</Badge>
+                    <Badge variant="secondary" className="bg-primary/80 text-primary-foreground">{player.score} Points</Badge>
                   </div>
                 </Card>
               ))}
@@ -176,15 +195,15 @@ export default function LeaderboardPage() {
             <div className="overflow-x-auto">
                 <Table>
                 <TableHeader>
-                    <TableRow>
-                    <TableHead className="w-[80px] pr-0">Rank</TableHead>
-                    <TableHead>Player</TableHead>
-                    <TableHead className="text-right">Score</TableHead>
+                    <TableRow className="border-white/10">
+                    <TableHead className="w-[80px] pr-0 text-white/80">Rank</TableHead>
+                    <TableHead className="text-white/80">Player</TableHead>
+                    <TableHead className="text-right text-white/80">Score</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {restOfPlayers.map(player => (
-                    <TableRow key={player.rank}>
+                    <TableRow key={player.rank} className="border-white/10 hover:bg-white/5">
                         <TableCell className="font-bold">{player.rank}</TableCell>
                         <TableCell>
                         <div className="flex items-center gap-3">

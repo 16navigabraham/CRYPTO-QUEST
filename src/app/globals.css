@@ -98,4 +98,13 @@
   .animate-pulse-slow {
     animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+
+  @keyframes wave {
+    0%, 100% { transform: translate(-25%, -25%) rotate(0deg); }
+    50% { transform: translate(-30%, -30%) rotate(180deg); }
+  }
+
+  .animate-wave {
+    animation: wave 15s infinite ease-in-out;
+  }
 }
