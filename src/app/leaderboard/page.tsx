@@ -41,10 +41,10 @@ const getRankIcon = (rank: number) => {
 }
 
 const getRankColor = (rank: number) => {
-    if(rank === 1) return "border-yellow-400 bg-yellow-400/10";
-    if(rank === 2) return "border-slate-400 bg-slate-400/10";
-    if(rank === 3) return "border-yellow-600 bg-yellow-600/10";
-    return "border-border";
+    if(rank === 1) return "border-yellow-400/50 hover:border-yellow-400";
+    if(rank === 2) return "border-slate-400/50 hover:border-slate-400";
+    if(rank === 3) return "border-yellow-600/50 hover:border-yellow-600";
+    return "border-primary/30";
 }
 
 const LeaderboardSkeleton = () => (
@@ -177,7 +177,16 @@ export default function LeaderboardPage() {
             {/* Top 3 Players */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               {topThree.map((player) => (
-                <Card key={player.rank} className={cn("text-center p-4 transform transition-transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/30", getRankColor(player.rank))}>
+                <Card 
+                  key={player.rank} 
+                  className={cn(
+                    "text-center p-4 rounded-2xl transition-all duration-300",
+                    "bg-blue-900/10 backdrop-blur-xl border",
+                    "hover:scale-105 hover:-translate-y-2",
+                    "hover:shadow-2xl hover:shadow-primary/40",
+                    getRankColor(player.rank)
+                  )}
+                >
                   <div className="flex flex-col items-center gap-2">
                     <div className="mb-2">{getRankIcon(player.rank)}</div>
                      <Avatar className="h-20 w-20 border-2 border-primary">
@@ -226,5 +235,3 @@ export default function LeaderboardPage() {
     </div>
   );
 }
-
-    
