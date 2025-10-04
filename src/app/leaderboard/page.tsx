@@ -227,84 +227,99 @@ export default function LeaderboardPage() {
     <div className="relative min-h-screen w-full bg-gradient-to-br from-[#0a1628] via-[#1e3a8a] to-[#0c4a6e] p-4 sm:p-8 flex flex-col items-center">
       <AnimatedWaves />
       <div className="w-full max-w-4xl z-10">
-        <Button asChild variant="ghost" className="mb-4 text-white/80 hover:text-white hover:bg-white/10">
-            <Link href="/home">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
-            </Link>
-        </Button>
-        <Card className="bg-card/10 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/10 text-card-foreground">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold tracking-tight">Leaderboard</CardTitle>
-            <CardDescription className="text-white/70">See who is leading the quest for knowledge!</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Top 3 Players */}
-            <div className="relative flex items-end justify-center gap-2 sm:gap-4 mb-12 min-h-[320px]">
-              {topThree.map((player) => (
+        <div style={{ animation: 'fade-in-slide-up 0.5s ease-out forwards', opacity: 0 }}>
+            <Button asChild variant="ghost" className="mb-4 text-white/80 hover:text-white hover:bg-white/10">
+                <Link href="/home">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                </Link>
+            </Button>
+        </div>
+        <div style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', opacity: 0, animationDelay: '0.1s' }}>
+            <Card className="bg-card/10 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/10 text-card-foreground">
+            <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold tracking-tight">Leaderboard</CardTitle>
+                <CardDescription className="text-white/70">See who is leading the quest for knowledge!</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {/* Top 3 Players */}
                 <div 
-                  key={player.rank} 
-                  className={cn(
-                    "w-1/3 transition-all duration-300 ease-in-out",
-                    getPodiumClass(player.rank),
-                    player.rank === 1 && "-translate-y-5",
-                  )}
+                    className="relative flex items-end justify-center gap-2 sm:gap-4 mb-12 min-h-[320px]"
                 >
-                    <Card 
-                      className={cn(
-                        "text-center p-4 rounded-2xl",
-                        "bg-blue-900/10 backdrop-blur-xl border",
-                        "hover:scale-105 hover:-translate-y-2",
-                        "hover:shadow-2xl hover:shadow-primary/40",
-                        getRankColor(player.rank)
-                      )}
+                {topThree.map((player) => (
+                    <div 
+                    key={player.rank} 
+                    className={cn(
+                        "w-1/3 transition-all duration-500 ease-in-out hover:-translate-y-2",
+                        "transform-gpu",
+                        player.rank === 1 && "z-10",
+                    )}
+                    style={{
+                        animation: `fade-in-slide-up 0.7s ease-out forwards`,
+                        animationDelay: `${0.2 + (player.rank * 0.1)}s`,
+                        opacity: 0,
+                        transform: `translateY(${player.rank === 1 ? '-20px' : (player.rank === 2 ? '-10px' : '0')}) scale(${player.rank === 1 ? 1.1 : 1})`,
+                    }}
                     >
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
-                         <AvatarGlow src={player.avatar} name={player.name} />
-                        <p className="text-xl font-bold">{player.name}</p>
-                        <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
-                           <AnimatedNumber value={player.score} /> Points
-                        </div>
-                      </div>
-                    </Card>
-                </div>
-              ))}
-            </div>
-
-            {/* Rest of the players table */}
-            <div className="overflow-x-auto">
-                <Table>
-                <TableHeader>
-                    <TableRow className="border-white/10">
-                    <TableHead className="w-[80px] pr-0 text-white/80">Rank</TableHead>
-                    <TableHead className="text-white/80">Player</TableHead>
-                    <TableHead className="text-right text-white/80">Score</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {restOfPlayers.map(player => (
-                    <TableRow key={player.rank} className="group border-white/10 hover:bg-white/5 transition-all duration-300">
-                        <TableCell className="font-bold text-center">{getRankIcon(player.rank)}</TableCell>
-                        <TableCell>
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/30">
-                            <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
-                            <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span className="truncate">{player.name}</span>
-                        </div>
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <Card 
+                        className={cn(
+                            "text-center p-4 rounded-2xl",
+                            "bg-blue-900/10 backdrop-blur-xl border",
+                            "hover:scale-105",
+                            "hover:shadow-2xl hover:shadow-primary/40",
+                            getRankColor(player.rank)
+                        )}
+                        >
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
+                            <AvatarGlow src={player.avatar} name={player.name} />
+                            <p className="text-xl font-bold">{player.name}</p>
+                            <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
                             <AnimatedNumber value={player.score} /> Points
-                        </TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
-            </div>
-          </CardContent>
-        </Card>
+                            </div>
+                        </div>
+                        </Card>
+                    </div>
+                ))}
+                </div>
+
+                {/* Rest of the players table */}
+                <div 
+                    className="overflow-x-auto"
+                    style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', opacity: 0, animationDelay: '0.5s' }}
+                >
+                    <Table>
+                    <TableHeader>
+                        <TableRow className="border-white/10">
+                        <TableHead className="w-[80px] pr-0 text-white/80">Rank</TableHead>
+                        <TableHead className="text-white/80">Player</TableHead>
+                        <TableHead className="text-right text-white/80">Score</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {restOfPlayers.map(player => (
+                        <TableRow key={player.rank} className="group border-white/10 hover:bg-white/5 transition-all duration-300">
+                            <TableCell className="font-bold text-center">{getRankIcon(player.rank)}</TableCell>
+                            <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/30">
+                                <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
+                                <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span className="truncate">{player.name}</span>
+                            </div>
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                                <AnimatedNumber value={player.score} /> Points
+                            </TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+            </Card>
+        </div>
       </div>
     </div>
   );
