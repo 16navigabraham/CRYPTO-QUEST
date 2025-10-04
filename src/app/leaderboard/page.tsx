@@ -100,43 +100,45 @@ const getPodiumClass = (rank: number) => {
 
 const LeaderboardSkeleton = () => (
     <div className="w-full max-w-4xl">
-        <Card>
+        <Card className="bg-card/10 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/10">
             <CardHeader className="text-center">
                 <Skeleton className="h-8 w-1/2 mx-auto" />
-                <Skeleton className="h-4 w-3/4 mx-auto" />
+                <Skeleton className="h-4 w-3/4 mx-auto mt-2" />
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                    {[...Array(3)].map((_, i) => (
-                        <Card key={i} className="text-center p-4">
-                            <div className="flex flex-col items-center gap-2">
-                                <Skeleton className="h-6 w-6 rounded-full" />
-                                <Skeleton className="h-20 w-20 rounded-full" />
-                                <Skeleton className="h-6 w-24" />
-                                <Skeleton className="h-5 w-16" />
-                            </div>
-                        </Card>
+                <div className="relative flex items-end justify-center gap-2 sm:gap-4 mb-12 min-h-[320px]">
+                    {[2, 1, 3].map((rank) => (
+                         <div key={rank} className={cn("w-1/3", getPodiumClass(rank), rank === 1 && "-translate-y-5")}>
+                            <Card className={cn("text-center p-4 rounded-2xl bg-blue-900/10 backdrop-blur-xl border", getRankColor(rank))}>
+                                <div className="flex flex-col items-center gap-2">
+                                    <Skeleton className="h-10 w-8 mb-2" />
+                                    <Skeleton className="h-20 w-20 rounded-full" />
+                                    <Skeleton className="h-6 w-24 mt-2" />
+                                    <Skeleton className="h-8 w-32 mt-1" />
+                                </div>
+                            </Card>
+                        </div>
                     ))}
                 </div>
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[80px]">Rank</TableHead>
-                            <TableHead>Player</TableHead>
-                            <TableHead className="text-right">Score</TableHead>
+                        <TableRow className="border-white/10">
+                            <TableHead className="w-[80px]"><Skeleton className="h-5 w-12"/></TableHead>
+                            <TableHead><Skeleton className="h-5 w-24"/></TableHead>
+                            <TableHead className="text-right"><Skeleton className="h-5 w-16 ml-auto"/></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {[...Array(7)].map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-5 w-5" /></TableCell>
+                            <TableRow key={i} className="border-white/10">
+                                <TableCell><Skeleton className="h-6 w-6" /></TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         <Skeleton className="h-10 w-10 rounded-full" />
                                         <Skeleton className="h-5 w-32" />
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                                <TableCell className="text-right"><Skeleton className="h-6 w-20 ml-auto" /></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -203,9 +205,10 @@ export default function LeaderboardPage() {
 
   if (loading) {
       return (
-         <div className="flex min-h-screen flex-col items-center bg-background p-4 sm:p-8">
-            <div className="w-full max-w-4xl">
-                 <Button asChild variant="ghost" className="mb-4">
+         <div className="relative flex min-h-screen flex-col items-center bg-gradient-to-br from-[#0a1628] via-[#1e3a8a] to-[#0c4a6e] p-4 sm:p-8">
+            <AnimatedWaves />
+            <div className="w-full max-w-4xl z-10">
+                 <Button asChild variant="ghost" className="mb-4 text-white/80 hover:text-white hover:bg-white/10 invisible">
                     <Link href="/home">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Home
