@@ -154,4 +154,18 @@
     animation: shimmer 2s infinite;
     background-size: 200% 100%;
   }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0) rotateX(0deg); }
+    50% { transform: translateY(-5px) rotateX(2deg); }
+  }
+
+  @keyframes progress-fill {
+    from { width: 0%; }
+    to { width: var(--progress-width, 0%); }
+  }
+
+  .animate-progress-fill {
+    animation: progress-fill 2s ease-out forwards;
+  }
 }

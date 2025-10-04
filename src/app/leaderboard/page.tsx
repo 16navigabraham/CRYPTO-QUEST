@@ -25,6 +25,13 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState, useRef } from 'react';
 import { getLeaderboard } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 type Player = {
     rank: number;
@@ -69,18 +76,71 @@ const AnimatedNumber = ({ value }: { value: number }) => {
     return <span>{currentValue.toLocaleString()}</span>;
 };
 
+const RankTooltipContent = ({ player, maxScore = 5000 }: { player: Player; maxScore?: number }) => (
+    <div className="space-y-2">
+        <div className="flex justify-between items-center">
+            <span className="text-xs text-slate-400">Score</span>
+            <span className="text-xs font-bold">{player.score.toLocaleString()} / {maxScore.toLocaleString()}</span>
+        </div>
+        <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+            <div 
+                className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-progress-fill"
+                style={{ '--progress-width': `${(player.score / maxScore) * 100}%` } as React.CSSProperties}
+            />
+        </div>
+        <p className="text-xs text-slate-400 text-center">Keep going!</p>
+    </div>
+);
 
-const getRankIcon = (rank: number) => {
-    if (rank === 1) return <span className="text-4xl font-extrabold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(234,179,8,0.7)]">{rank}</span>;
-    if (rank === 2) return <span className="text-4xl font-extrabold bg-gradient-to-r from-slate-300 to-slate-400 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(203,213,225,0.7)]">{rank}</span>;
-    if (rank === 3) return <span className="text-4xl font-extrabold bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(202,138,4,0.7)]">{rank}</span>;
-    return <span className="text-lg font-bold">{rank}</span>;
+
+const getRankIcon = (player: Player) => {
+    const rank = player.rank;
+    let icon;
+    let rankClass = "text-lg font-bold text-white/90";
+    let shadowColor = 'rgba(255, 255, 255, 0.4)';
+
+    if (rank === 1) {
+        icon = <Crown className="h-8 w-8 text-yellow-400" />;
+        rankClass = "text-4xl font-extrabold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent";
+        shadowColor = 'rgba(234, 179, 8, 0.7)';
+    } else if (rank === 2) {
+        icon = <Medal className="h-8 w-8 text-slate-300" />;
+        rankClass = "text-4xl font-extrabold bg-gradient-to-r from-slate-300 to-slate-400 bg-clip-text text-transparent";
+        shadowColor = 'rgba(203, 213, 225, 0.7)';
+    } else if (rank === 3) {
+        icon = <Trophy className="h-8 w-8 text-orange-400" />;
+        rankClass = "text-4xl font-extrabold bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent";
+        shadowColor = 'rgba(202, 138, 4, 0.7)';
+    }
+
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="relative group">
+                         {icon ? (
+                            <div className="animate-float-slow" style={{ filter: `drop-shadow(0 0 10px ${shadowColor})` }}>
+                                {icon}
+                            </div>
+                        ) : (
+                            <span className={rankClass} style={{ filter: `drop-shadow(0 0 5px ${shadowColor})` }}>
+                                {rank}
+                            </span>
+                        )}
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-950/90 backdrop-blur-lg border-blue-500/30 text-white rounded-xl shadow-2xl shadow-black/50">
+                    <RankTooltipContent player={player} />
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
 }
 
 const getRankColor = (rank: number) => {
-    if(rank === 1) return "border-yellow-400/50 hover:border-yellow-400";
-    if(rank === 2) return "border-slate-400/50 hover:border-slate-400";
-    if(rank === 3) return "border-orange-500/50 hover:border-orange-500";
+    if(rank === 1) return "border-yellow-400/50";
+    if(rank === 2) return "border-slate-400/50";
+    if(rank === 3) return "border-orange-500/50";
     return "border-primary/30";
 }
 
@@ -236,9 +296,9 @@ export default function LeaderboardPage() {
             </Button>
         </div>
         <div style={{ animation: 'fade-in-slide-up 0.6s ease-out forwards', opacity: 0, animationDelay: '0.1s' }}>
-            <Card className="bg-card/10 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/10 text-card-foreground">
+            <Card className="bg-slate-900/40 backdrop-blur-2xl border-cyan-400/20 shadow-2xl shadow-cyan-500/10 text-card-foreground rounded-2xl">
             <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-bold tracking-tight">Leaderboard</CardTitle>
+                <CardTitle className="text-3xl font-bold tracking-tight text-white/90">Leaderboard</CardTitle>
                 <CardDescription className="text-white/70">See who is leading the quest for knowledge!</CardDescription>
             </CardHeader>
             <CardContent>
@@ -250,7 +310,7 @@ export default function LeaderboardPage() {
                     <div 
                     key={player.rank} 
                     className={cn(
-                        "w-1/3 transition-all duration-500 ease-in-out hover:-translate-y-2",
+                        "w-1/3 transition-all duration-500 ease-in-out",
                         "transform-gpu",
                         player.rank === 1 && "z-10",
                     )}
@@ -263,17 +323,17 @@ export default function LeaderboardPage() {
                     >
                         <Card 
                         className={cn(
-                            "text-center p-4 rounded-2xl",
-                            "bg-blue-900/10 backdrop-blur-xl border",
-                            "hover:scale-105",
+                            "text-center p-4 rounded-2xl transition-all duration-300",
+                            "bg-blue-950/50 backdrop-blur-xl border",
+                            "hover:-translate-y-2",
                             "hover:shadow-2xl hover:shadow-primary/40",
                             getRankColor(player.rank)
                         )}
                         >
                         <div className="flex flex-col items-center gap-2">
-                            <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
+                            <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player)}</div>
                             <AvatarGlow src={player.avatar} name={player.name} />
-                            <p className="text-xl font-bold">{player.name}</p>
+                            <p className="text-xl font-bold text-white/90">{player.name}</p>
                             <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
                             <AnimatedNumber value={player.score} /> Points
                             </div>
@@ -298,18 +358,18 @@ export default function LeaderboardPage() {
                     </TableHeader>
                     <TableBody>
                         {restOfPlayers.map(player => (
-                        <TableRow key={player.rank} className="group border-white/10 hover:bg-white/5 transition-all duration-300">
-                            <TableCell className="font-bold text-center">{getRankIcon(player.rank)}</TableCell>
+                        <TableRow key={player.rank} className="group border-white/10 transition-all duration-300 hover:bg-white/5 hover:!scale-[1.02]">
+                            <TableCell className="font-bold text-center">{getRankIcon(player)}</TableCell>
                             <TableCell>
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/30">
                                 <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
                                 <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <span className="truncate">{player.name}</span>
+                                <span className="truncate text-white/80">{player.name}</span>
                             </div>
                             </TableCell>
-                            <TableCell className="text-right font-medium">
+                            <TableCell className="text-right font-medium text-white/80">
                                 <AnimatedNumber value={player.score} /> Points
                             </TableCell>
                         </TableRow>
