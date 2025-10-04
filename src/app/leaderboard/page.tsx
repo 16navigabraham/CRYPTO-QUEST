@@ -124,16 +124,16 @@ export default function LeaderboardPage() {
   const AnimatedWaves = () => (
     <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden">
         <div 
-            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
-            style={{ animationDelay: '0s', animationDuration: '15s' }}
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)]"
+            style={{ animation: 'wave 15s infinite ease-in-out', animationDelay: '0s' }}
         />
         <div 
-            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
-            style={{ animationDelay: '-5s', animationDuration: '20s' }}
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)]"
+            style={{ animation: 'wave 20s infinite ease-in-out', animationDelay: '-5s' }}
         />
         <div 
-            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
-            style={{ animationDelay: '-10s', animationDuration: '25s' }}
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)]"
+            style={{ animation: 'wave 25s infinite ease-in-out', animationDelay: '-10s' }}
         />
     </div>
   );
@@ -212,11 +212,11 @@ export default function LeaderboardPage() {
                 </TableHeader>
                 <TableBody>
                     {restOfPlayers.map(player => (
-                    <TableRow key={player.rank} className="border-white/10 hover:bg-white/5">
+                    <TableRow key={player.rank} className="group border-white/10 hover:bg-white/5 transition-all duration-300">
                         <TableCell className="font-bold text-center">{getRankIcon(player.rank)}</TableCell>
                         <TableCell>
                         <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
+                            <Avatar className="h-10 w-10 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/30">
                             <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
                             <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                             </Avatar>
@@ -235,3 +235,5 @@ export default function LeaderboardPage() {
     </div>
   );
 }
+
+    
