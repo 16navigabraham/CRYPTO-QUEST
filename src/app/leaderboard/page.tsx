@@ -34,16 +34,16 @@ type Player = {
 }
 
 const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="h-8 w-8 text-yellow-400 drop-shadow-[0_0_15px_rgba(234,179,8,0.8)] animate-float-slow" />;
-    if (rank === 2) return <Medal className="h-8 w-8 text-slate-300 drop-shadow-[0_0_15px_rgba(203,213,225,0.7)] animate-float-slow" />;
-    if (rank === 3) return <Trophy className="h-8 w-8 text-yellow-600 drop-shadow-[0_0_15px_rgba(202,138,4,0.7)] animate-float-slow" />;
+    if (rank === 1) return <span className="text-4xl font-extrabold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(234,179,8,0.7)]">{rank}</span>;
+    if (rank === 2) return <span className="text-4xl font-extrabold bg-gradient-to-r from-slate-300 to-slate-400 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(203,213,225,0.7)]">{rank}</span>;
+    if (rank === 3) return <span className="text-4xl font-extrabold bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(202,138,4,0.7)]">{rank}</span>;
     return <span className="text-lg font-bold">{rank}</span>;
 }
 
 const getRankColor = (rank: number) => {
     if(rank === 1) return "border-yellow-400/50 hover:border-yellow-400";
     if(rank === 2) return "border-slate-400/50 hover:border-slate-400";
-    if(rank === 3) return "border-yellow-600/50 hover:border-yellow-600";
+    if(rank === 3) return "border-orange-500/50 hover:border-orange-500";
     return "border-primary/30";
 }
 
@@ -213,7 +213,7 @@ export default function LeaderboardPage() {
                 <TableBody>
                     {restOfPlayers.map(player => (
                     <TableRow key={player.rank} className="border-white/10 hover:bg-white/5">
-                        <TableCell className="font-bold">{player.rank}</TableCell>
+                        <TableCell className="font-bold text-center">{getRankIcon(player.rank)}</TableCell>
                         <TableCell>
                         <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
