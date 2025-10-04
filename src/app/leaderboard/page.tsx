@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getLeaderboard } from '../actions';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -32,6 +32,43 @@ type Player = {
     score: number;
     avatar: string | null;
 }
+
+const AnimatedNumber = ({ value }: { value: number }) => {
+    const [currentValue, setCurrentValue] = useState(0);
+    const targetValue = value;
+    const animationFrameId = useRef<number | null>(null);
+
+    useEffect(() => {
+        const start = performance.now();
+        const duration = 1500; // Animation duration in ms
+
+        const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+
+            const nextValue = Math.floor(easedProgress * targetValue);
+            setCurrentValue(nextValue);
+
+            if (progress < 1) {
+                animationFrameId.current = requestAnimationFrame(animate);
+            } else {
+                setCurrentValue(targetValue);
+            }
+        };
+
+        animationFrameId.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+            }
+        };
+    }, [targetValue]);
+
+    return <span>{currentValue.toLocaleString()}</span>;
+};
+
 
 const getRankIcon = (rank: number) => {
     if (rank === 1) return <span className="text-4xl font-extrabold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_5px_rgba(234,179,8,0.7)]">{rank}</span>;
@@ -124,16 +161,16 @@ export default function LeaderboardPage() {
   const AnimatedWaves = () => (
     <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden">
         <div 
-            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)]"
-            style={{ animation: 'wave 15s infinite ease-in-out', animationDelay: '0s' }}
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
+            style={{ animationDelay: '0s', animationDuration: '15s' }}
         />
         <div 
-            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)]"
-            style={{ animation: 'wave 20s infinite ease-in-out', animationDelay: '-5s' }}
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
+            style={{ animationDelay: '-5s', animationDuration: '20s' }}
         />
         <div 
-            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)]"
-            style={{ animation: 'wave 25s infinite ease-in-out', animationDelay: '-10s' }}
+            className="absolute w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] animate-wave"
+            style={{ animationDelay: '-10s', animationDuration: '25s' }}
         />
     </div>
   );
@@ -194,7 +231,9 @@ export default function LeaderboardPage() {
                       <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <p className="text-xl font-bold">{player.name}</p>
-                    <Badge variant="secondary" className="bg-primary/80 text-primary-foreground">{player.score} Points</Badge>
+                    <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
+                       <AnimatedNumber value={player.score} /> Points
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -223,7 +262,9 @@ export default function LeaderboardPage() {
                             <span className="truncate">{player.name}</span>
                         </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium">{player.score} Points</TableCell>
+                        <TableCell className="text-right font-medium">
+                            <AnimatedNumber value={player.score} /> Points
+                        </TableCell>
                     </TableRow>
                     ))}
                 </TableBody>
@@ -235,5 +276,3 @@ export default function LeaderboardPage() {
     </div>
   );
 }
-
-    
