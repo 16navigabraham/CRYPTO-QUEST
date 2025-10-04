@@ -133,6 +133,17 @@ const LeaderboardSkeleton = () => (
 );
 
 
+const AvatarGlow = ({ src, name }: { src: string | null; name: string }) => (
+  <div className="relative group">
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-[spin_2s_linear_infinite]"></div>
+    <Avatar className="h-20 w-20 relative border-2 border-background">
+      <AvatarImage src={src || ''} data-ai-hint="avatar" />
+      <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+    </Avatar>
+  </div>
+);
+
+
 export default function LeaderboardPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,10 +237,7 @@ export default function LeaderboardPage() {
                 >
                   <div className="flex flex-col items-center gap-2">
                     <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
-                     <Avatar className="h-20 w-20 border-2 border-primary">
-                      <AvatarImage src={player.avatar || ''} data-ai-hint="avatar" />
-                      <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                     <AvatarGlow src={player.avatar} name={player.name} />
                     <p className="text-xl font-bold">{player.name}</p>
                     <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
                        <AnimatedNumber value={player.score} /> Points

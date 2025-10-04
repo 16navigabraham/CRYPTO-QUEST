@@ -134,4 +134,10 @@
   .animate-wave {
     animation: wave 15s infinite ease-in-out;
   }
+
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 }
