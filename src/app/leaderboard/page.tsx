@@ -84,6 +84,20 @@ const getRankColor = (rank: number) => {
     return "border-primary/30";
 }
 
+const getPodiumClass = (rank: number) => {
+    switch (rank) {
+        case 1:
+            return "z-30 scale-110";
+        case 2:
+            return "z-20";
+        case 3:
+            return "z-10";
+        default:
+            return "z-0";
+    }
+}
+
+
 const LeaderboardSkeleton = () => (
     <div className="w-full max-w-4xl">
         <Card>
@@ -135,7 +149,7 @@ const LeaderboardSkeleton = () => (
 
 const AvatarGlow = ({ src, name }: { src: string | null; name: string }) => (
   <div className="relative group">
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-[spin_2s_linear_infinite]"></div>
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-spin" style={{ animationDuration: '3s' }}></div>
     <Avatar className="h-20 w-20 relative border-2 border-background">
       <AvatarImage src={src || ''} data-ai-hint="avatar" />
       <AvatarFallback>{name.charAt(0)}</AvatarFallback>
@@ -223,27 +237,35 @@ export default function LeaderboardPage() {
           </CardHeader>
           <CardContent>
             {/* Top 3 Players */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="relative flex items-end justify-center gap-2 sm:gap-4 mb-12 min-h-[320px]">
               {topThree.map((player) => (
-                <Card 
+                <div 
                   key={player.rank} 
                   className={cn(
-                    "text-center p-4 rounded-2xl transition-all duration-300",
-                    "bg-blue-900/10 backdrop-blur-xl border",
-                    "hover:scale-105 hover:-translate-y-2",
-                    "hover:shadow-2xl hover:shadow-primary/40",
-                    getRankColor(player.rank)
+                    "w-1/3 transition-all duration-300 ease-in-out",
+                    getPodiumClass(player.rank),
+                    player.rank === 1 && "-translate-y-5",
                   )}
                 >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
-                     <AvatarGlow src={player.avatar} name={player.name} />
-                    <p className="text-xl font-bold">{player.name}</p>
-                    <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
-                       <AnimatedNumber value={player.score} /> Points
-                    </div>
-                  </div>
-                </Card>
+                    <Card 
+                      className={cn(
+                        "text-center p-4 rounded-2xl",
+                        "bg-blue-900/10 backdrop-blur-xl border",
+                        "hover:scale-105 hover:-translate-y-2",
+                        "hover:shadow-2xl hover:shadow-primary/40",
+                        getRankColor(player.rank)
+                      )}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="mb-2 h-10 flex items-center justify-center">{getRankIcon(player.rank)}</div>
+                         <AvatarGlow src={player.avatar} name={player.name} />
+                        <p className="text-xl font-bold">{player.name}</p>
+                        <div className="font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-blue-700 to-cyan-500 animate-pulse-score">
+                           <AnimatedNumber value={player.score} /> Points
+                        </div>
+                      </div>
+                    </Card>
+                </div>
               ))}
             </div>
 
